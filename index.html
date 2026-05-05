@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FărăFum</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Rajdhani',system-ui,sans-serif;background:#020818;color:#fff;min-height:100vh;overflow-x:hidden}
+
+/* FUTURISTIC BASE */
+:root{
+  --neon:#00f5ff;
+  --neon2:#7b2fff;
+  --neon3:#ff2d78;
+  --bg:#020818;
+  --bg2:#060d24;
+  --card:rgba(0,245,255,0.04);
+  --border:rgba(0,245,255,0.15);
+  --border2:rgba(123,47,255,0.3);
+}
+
+/* GRID BACKGROUND */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,245,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,0.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;
+}
+
+.screen{display:none;min-height:100vh;flex-direction:column;position:relative;z-index:1}
+.screen.active{display:flex}
+
+/* GLOW EFFECTS */
+.glow{text-shadow:0 0 20px var(--neon),0 0 40px var(--neon)}
+.glow2{text-shadow:0 0 20px var(--neon2),0 0 40px var(--neon2)}
+.glow3{text-shadow:0 0 20px var(--neon3)}
+
+/* CARDS */
+.fcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem;position:relative;overflow:hidden}
+.fcard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent)}
+
+/* NEON BUTTON */
+.nbtn-neon{background:transparent;border:1px solid var(--neon);color:var(--neon);padding:14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;width:100%;font-family:'Rajdhani',sans-serif;letter-spacing:1px;transition:all .3s;position:relative;overflow:hidden}
+.nbtn-neon:hover{background:rgba(0,245,255,.1);box-shadow:0 0 20px rgba(0,245,255,.3)}
+.nbtn-neon.primary{background:linear-gradient(135deg,rgba(0,245,255,.15),rgba(123,47,255,.15));border-color:var(--neon2);color:#fff;box-shadow:0 0 30px rgba(123,47,255,.2)}
+
+/* INPUTS */
+.finput{width:100%;background:rgba(0,245,255,.05);border:1px solid var(--border);border-radius:10px;padding:12px;color:#fff;font-size:15px;outline:none;font-family:'Rajdhani',sans-serif}
+.finput:focus{border-color:var(--neon);box-shadow:0 0 15px rgba(0,245,255,.15)}
+
+/* NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(2,8,24,.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 16px;z-index:50}
+.nbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(0,245,255,.3);cursor:pointer;padding:6px 0;font-size:10px;font-family:'Rajdhani',sans-serif;letter-spacing:.5px;transition:color .3s}
+.nbtn.active{color:var(--neon);text-shadow:0 0 10px var(--neon)}
+.nicon{font-size:20px}
+
+/* CINEMATIC */
+#cinematic{position:fixed;inset:0;z-index:200;background:#020818;transition:opacity .6s}
+
+/* SETUP */
+#screen-setup{background:var(--bg);padding:2rem 1.5rem;align-items:center}
+.setup-logo{font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--neon),var(--neon2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem;text-align:center}
+.setup-sub{font-size:14px;color:rgba(0,245,255,.5);text-align:center;margin-bottom:2rem;letter-spacing:1px}
+.slabel{font-size:12px;color:rgba(0,245,255,.6);margin-bottom:.5rem;letter-spacing:1px;text-transform:uppercase}
+.srow{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+/* MAIN */
+#screen-main,#screen-stats,#screen-remind,#screen-premium{background:var(--bg);padding-bottom:80px;overflow-y:auto}
+
+.app-header{padding:1.5rem 1.5rem .5rem;text-align:center}
+.app-logo{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--neon),var(--neon2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px}
+.app-sub{font-size:13px;color:rgba(0,245,255,.5);margin-top:4px;letter-spacing:.5px}
+
+/* TIMER */
+.timer-section{padding:1.5rem;text-align:center}
+.timer-ring{width:190px;height:190px;margin:0 auto 1rem;position:relative}
+.timer-ring svg{transform:rotate(-90deg);filter:drop-shadow(0 0 8px var(--neon))}
+.timer-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.tdays{font-family:'Orbitron',sans-serif;font-size:42px;font-weight:900;color:var(--neon);line-height:1;text-shadow:0 0 20px var(--neon),0 0 40px var(--neon)}
+.tlbl{font-size:11px;color:rgba(0,245,255,.5);margin-top:4px;letter-spacing:2px;text-transform:uppercase}
+.timer-hms{display:flex;gap:1rem;justify-content:center;margin-top:.75rem}
+.tunit{text-align:center;background:rgba(0,245,255,.05);border:1px solid var(--border);border-radius:10px;padding:8px 16px}
+.tnum{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:#fff}
+.thms{font-size:10px;color:rgba(0,245,255,.5);margin-top:2px;letter-spacing:1px;text-transform:uppercase}
+
+/* STATS GRID */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 1.5rem 1rem}
+.scard2{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;position:relative;overflow:hidden}
+.scard2::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent)}
+.sicon{font-size:22px;margin-bottom:4px}
+.sval{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--neon)}
+.slab{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;letter-spacing:.5px}
+
+/* SECTION TITLE */
+.sectitle{font-size:12px;font-weight:700;color:rgba(0,245,255,.6);margin-bottom:.75rem;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.sectitle::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+
+/* LUNGS */
+.lsec{padding:0 1.5rem 1rem}
+.lcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem;position:relative;overflow:hidden}
+.lcard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent)}
+.lwrap{display:flex;align-items:center;gap:1rem}
+.linfo{flex:1}
+.lpct{font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--neon);text-shadow:0 0 15px var(--neon)}
+.lstatus{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px;line-height:1.5}
+.lbarbg{background:rgba(0,245,255,.08);border-radius:50px;height:6px;margin-top:10px;overflow:hidden;border:1px solid var(--border)}
+.lbarfill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--neon2),var(--neon));box-shadow:0 0 10px var(--neon);transition:width .5s}
+
+/* BADGES */
+.bsec{padding:0 1.5rem 1rem}
+.bscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.badge{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;min-width:90px;text-align:center;flex-shrink:0}
+.badge.earned{background:rgba(0,245,255,.08);border-color:var(--neon);box-shadow:0 0 15px rgba(0,245,255,.15)}
+.badge-icon{font-size:24px;margin-bottom:4px}
+.badge-name{font-size:11px;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.5px}
+.badge.earned .badge-name{color:var(--neon)}
+.badge-locked{filter:grayscale(1);opacity:.3}
+
+/* MOTIVATIONAL */
+.msec{padding:0 1.5rem 1rem}
+.mcard{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:1.25rem;text-align:center;position:relative;overflow:hidden}
+.mcard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon2),transparent)}
+.mtext{font-size:14px;color:rgba(255,255,255,.7);line-height:1.7;font-style:italic;transition:opacity .2s}
+.mrefresh{background:none;border:1px solid var(--border2);color:var(--neon2);padding:8px 20px;border-radius:50px;font-size:12px;cursor:pointer;margin-top:10px;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
+
+/* PREMIUM BANNER */
+.pbanner{margin:0 1.5rem 1rem;background:linear-gradient(135deg,rgba(123,47,255,.2),rgba(255,45,120,.2));border:1px solid rgba(123,47,255,.4);border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.pbtext{font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px}
+.pbsub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.pbbtn{background:linear-gradient(135deg,var(--neon2),var(--neon3));color:#fff;border:none;padding:6px 14px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif}
+
+/* STATS SCREEN */
+.stats-header{padding:1.5rem 1.5rem .5rem;text-align:center}
+.statsec{padding:0 1.5rem 1.25rem}
+.stlbl{font-size:12px;font-weight:700;color:rgba(0,245,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.stlbl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+.sumgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sumcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;position:relative;overflow:hidden}
+.sumcard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon2),transparent)}
+.sumval{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:800;color:var(--neon)}
+.sumlbl{font-size:11px;color:rgba(255,255,255,.4);margin-top:3px}
+.mnycard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,245,255,.06)}
+.mrow:last-child{border-bottom:none}
+.mperiod{font-size:13px;color:rgba(255,255,255,.4)}
+.mamt{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:var(--neon)}
+.eqcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
+.eqitem{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(0,245,255,.06)}
+.eqitem:last-child{border-bottom:none}
+.eqicon{font-size:22px;width:36px;text-align:center}
+.eqname{font-size:13px;color:rgba(255,255,255,.6)}
+.eqval{font-size:12px;color:rgba(0,245,255,.5);margin-top:1px}
+.eqbarbg{background:rgba(0,245,255,.08);border-radius:50px;height:4px;margin-top:4px;overflow:hidden}
+.eqbarfill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--neon2),var(--neon))}
+.chartcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
+.chartbars{display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:6px}
+.cbwrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.cbar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--neon),var(--neon2));box-shadow:0 0 8px rgba(0,245,255,.3);min-height:4px}
+.tlcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
+.tlitem{display:flex;gap:12px;margin-bottom:12px}
+.tlitem:last-child{margin-bottom:0}
+.tldot{width:12px;height:12px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.tldot.done{background:var(--neon);box-shadow:0 0 8px var(--neon)}
+.tldot.next{background:transparent;border:2px solid var(--neon)}
+.tldot.future{background:#222}
+.tltitle{font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px}
+.tltitle.future{color:rgba(255,255,255,.3)}
+.tlsub{font-size:12px;color:rgba(255,255,255,.4);margin-top:2px}
+.reccard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
+.recrow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)}
+.recrow:last-child{border-bottom:none}
+.reclbl{font-size:13px;color:rgba(255,255,255,.4)}
+.recval{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:#fff}
+.cmpcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem;position:relative;overflow:hidden}
+.cmprow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.cmplbl{font-size:12px;color:rgba(255,255,255,.4);width:60px}
+.cmpbarbg{flex:1;background:rgba(0,245,255,.08);border-radius:50px;height:8px;overflow:hidden}
+.cmpbarfill{height:100%;border-radius:50px}
+.cmpval{font-size:12px;color:#fff;width:50px;text-align:right}
+.cmplck{position:absolute;inset:0;background:rgba(2,8,24,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:16px;cursor:pointer;border:1px solid var(--border)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:#060d24;border:1px solid var(--border);border-bottom:none;border-radius:24px 24px 0 0;padding:2rem 1.5rem;width:100%;max-width:420px}
+.modal h3{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;margin-bottom:.5rem;color:var(--neon)}
+.modal p{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:1.5rem}
+.mfeat{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
+.mficon{font-size:22px;width:36px;text-align:center}
+.mftext{font-size:14px;color:rgba(255,255,255,.7)}
+.modalbtn{background:linear-gradient(135deg,var(--neon2),var(--neon3));color:#fff;border:none;padding:16px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;width:100%;margin-top:1rem;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
+.modalclose{background:none;border:none;color:rgba(255,255,255,.3);font-size:14px;cursor:pointer;width:100%;text-align:center;margin-top:.75rem;font-family:'Rajdhani',sans-serif}
+
+/* CDOT */
+.cdot{width:8px;height:8px;border-radius:50%;background:rgba(0,245,255,.2)}
+.cdot.on{background:var(--neon);box-shadow:0 0 8px var(--neon)}
+
+/* REMIND / PREMIUM SCREENS */
+.screen-title{padding:1.5rem 1.5rem .75rem;text-align:center}
+.screen-title h2{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--neon);text-shadow:0 0 15px var(--neon)}
+.screen-title p{font-size:13px;color:rgba(0,245,255,.4);margin-top:4px;letter-spacing:.5px}
+</style>
+</head>
+<body onload="startCin()">
+
+<!-- CINEMATIC -->
+<div id="cinematic" style="position:fixed;inset:0;z-index:200;background:#020818;transition:opacity .6s">
+<iframe id="cin-frame" style="width:100%;height:calc(100% - 60px);border:none" srcdoc='
+<!DOCTYPE html><html><head><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020818;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui,sans-serif;transition:background .8s}
+body::before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(0,245,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+#em{font-size:90px;text-align:center;margin-bottom:1.5rem;line-height:1.2;position:relative;z-index:1;filter:drop-shadow(0 0 20px rgba(0,245,255,.5))}
+#ti{font-size:21px;font-weight:700;color:#fff;text-align:center;margin-bottom:.75rem;line-height:1.4;padding:0 2rem;position:relative;z-index:1;text-shadow:0 0 20px rgba(0,245,255,.5)}
+#su{font-size:14px;color:rgba(0,245,255,.6);text-align:center;line-height:1.6;padding:0 2rem;position:relative;z-index:1;letter-spacing:.5px}
+#dots{display:flex;gap:8px;margin-top:2rem;position:relative;z-index:1}
+.d{width:8px;height:8px;border-radius:50%;background:rgba(0,245,255,.2)}
+.d.on{background:#00f5ff;box-shadow:0 0 8px #00f5ff}
+</style></head>
+<body onload="run()">
+<div id="em">👨‍👩‍👧‍👦</div>
+<div id="ti">Familia ta te așteaptă</div>
+<div id="su">Fiecare zi contează pentru ei</div>
+<div id="dots"><div class="d on"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div></div>
+<script>
+var S=[
+  {e:"👨‍👩‍👧‍👦",t:"Familia ta te așteaptă",s:"Fiecare zi contează pentru ei",bg:"#020818"},
+  {e:"👶",t:"Copilul tău are nevoie de tine",s:"Sănătos, prezent și viu lângă el",bg:"#020d1a"},
+  {e:"🫁",t:"Plămânii tăi se vindecă acum",s:"Cu fiecare oră câștigi viață",bg:"#021408"},
+  {e:"❤️",t:"Inima ta bate mai puternic",s:"Și ei o simt în fiecare îmbrățișare",bg:"#180208"},
+  {e:"🌟",t:"Tu poți face asta!",s:"Mii de oameni au reușit. Acum e rândul tău.",bg:"#0d0818"}
+];
+var i=0;
+function show(n){
+  document.body.style.background=S[n].bg;
+  document.getElementById("em").innerHTML=S[n].e;
+  document.getElementById("ti").innerHTML=S[n].t;
+  document.getElementById("su").innerHTML=S[n].s;
+  var ds=document.getElementsByClassName("d");
+  for(var j=0;j<ds.length;j++) ds[j].className="d"+(j===n?" on":"");
+}
+function run(){
+  show(0);
+  setInterval(function(){i++;if(i>=S.length){window.parent.postMessage("cinDone","*");return;}show(i);},2000);
+}
+</script></body></html>
+'></iframe>
+<button onclick="skipCin()" style="position:absolute;bottom:0;left:0;right:0;height:60px;background:rgba(2,8,24,.9);border:none;border-top:1px solid rgba(0,245,255,.15);color:rgba(0,245,255,.6);font-size:15px;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:2px">SARI PESTE ›</button>
+</div>
+
+<!-- SETUP -->
+<div id="screen-setup" class="screen">
+  <div style="padding:3rem 1.5rem 2rem;display:flex;flex-direction:column;align-items:center;width:100%">
+    <div class="setup-logo">🚭 FĂRĂFUM</div>
+    <div class="setup-sub">INIȚIALIZARE PROFIL</div>
+    <div class="fcard" style="width:100%;margin-bottom:1rem">
+      <div class="slabel">Ultima țigară</div>
+      <input type="datetime-local" class="finput" id="quit-date">
+    </div>
+    <div class="fcard" style="width:100%;margin-bottom:1rem">
+      <div class="srow">
+        <div><div class="slabel">Țigări / zi</div><input type="number" class="finput" id="cigs-day" value="20" min="1"></div>
+        <div><div class="slabel">Preț pachet</div><input type="number" class="finput" id="pack-price" value="35" min="1"></div>
+      </div>
+    </div>
+    <div class="fcard" style="width:100%;margin-bottom:1.5rem">
+      <div class="slabel">Numele tău</div>
+      <input type="text" class="finput" id="user-name" placeholder="ex: Andrei">
+    </div>
+    <button class="nbtn-neon primary" onclick="saveSetup()">ACTIVEAZĂ MISIUNEA 🚀</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="screen-main" class="screen">
+  <div class="app-header">
+    <div class="app-logo">🚭 FĂRĂFUM</div>
+    <div class="app-sub" id="header-sub">SISTEM ACTIV • MONITORIZARE ÎN CURS</div>
+  </div>
+  <div class="timer-section">
+    <div class="timer-ring">
+      <svg width="190" height="190" viewBox="0 0 190 190">
+        <circle cx="95" cy="95" r="85" fill="none" stroke="rgba(0,245,255,0.08)" stroke-width="8"/>
+        <circle cx="95" cy="95" r="85" fill="none" stroke="url(#ringGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="534" id="ring-prog" stroke-dashoffset="534"/>
+        <defs><linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#7b2fff"/><stop offset="100%" stop-color="#00f5ff"/></linearGradient></defs>
+      </svg>
+      <div class="timer-ring-text">
+        <div class="tdays" id="days-c">0</div>
+        <div class="tlbl">ZILE LIBERE</div>
+      </div>
+    </div>
+    <div class="timer-hms">
+      <div class="tunit"><div class="tnum" id="hrs-c">00</div><div class="thms">ORE</div></div>
+      <div class="tunit"><div class="tnum" id="min-c">00</div><div class="thms">MIN</div></div>
+      <div class="tunit"><div class="tnum" id="sec-c">00</div><div class="thms">SEC</div></div>
+    </div>
+  </div>
+  <div class="sgrid">
+    <div class="scard2"><div class="sicon">🚬</div><div class="sval" id="cigs-av">0</div><div class="slab">ȚIGĂRI EVITATE</div></div>
+    <div class="scard2"><div class="sicon">💰</div><div class="sval" id="money-s">0</div><div class="slab">RON ECONOMISIȚI</div></div>
+    <div class="scard2"><div class="sicon">⏳</div><div class="sval" id="life-g">0</div><div class="slab">VIAȚĂ CÂȘTIGATĂ</div></div>
+    <div class="scard2"><div class="sicon">🔥</div><div class="sval" id="streak-d">0</div><div class="slab">ZILE LA RÂND</div></div>
+  </div>
+  <div class="lsec">
+    <div class="sectitle">🫁 STATUS PULMONAR</div>
+    <div class="lcard">
+      <div class="lwrap">
+        <svg width="90" height="100" viewBox="0 0 90 100" style="flex-shrink:0">
+          <defs>
+            <radialGradient id="lg-left" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#5a1a1a" id="lg-left-c1"/><stop offset="100%" stop-color="#2a0a0a" id="lg-left-c2"/></radialGradient>
+            <radialGradient id="lg-right" cx="60%" cy="40%" r="60%"><stop offset="0%" stop-color="#5a1a1a" id="lg-right-c1"/><stop offset="100%" stop-color="#2a0a0a" id="lg-right-c2"/></radialGradient>
+            <radialGradient id="lg-health" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00f5ff" stop-opacity="0" id="lgh1"/><stop offset="100%" stop-color="#7b2fff" stop-opacity="0" id="lgh2"/></radialGradient>
+          </defs>
+          <rect x="41" y="2" width="8" height="16" rx="4" fill="#444"/><rect x="43" y="2" width="4" height="16" rx="2" fill="#666" opacity="0.4"/>
+          <path d="M41 16 Q30 20 24 28" fill="none" stroke="#444" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M49 16 Q60 20 66 28" fill="none" stroke="#444" stroke-width="3.5" stroke-linecap="round"/>
+          <path id="ll" d="M38 18 C32 18 18 26 13 38 C8 52 9 68 14 78 C18 85 25 87 30 83 C34 80 35 72 35 62 L35 28 C35 22 36 18 38 18Z" fill="url(#lg-left)" stroke="#333" stroke-width="1"/>
+          <path d="M35 28 C30 30 22 36 18 44" fill="none" stroke="#333" stroke-width="0.8" opacity="0.6"/>
+          <path d="M14 58 C18 56 26 56 32 60" fill="none" stroke="#333" stroke-width="0.8" opacity="0.6"/>
+          <path d="M24 35 C22 42 20 52 18 62" fill="none" stroke="#444" stroke-width="0.6" opacity="0.5"/>
+          <path d="M28 38 C26 46 25 56 24 68" fill="none" stroke="#444" stroke-width="0.6" opacity="0.5"/>
+          <path id="lr" d="M52 18 C58 18 72 26 77 38 C82 52 81 68 76 78 C72 85 65 87 60 83 C56 80 55 72 55 62 L55 28 C55 22 54 18 52 18Z" fill="url(#lg-right)" stroke="#333" stroke-width="1"/>
+          <path d="M55 28 C60 30 68 36 72 44" fill="none" stroke="#333" stroke-width="0.8" opacity="0.6"/>
+          <path d="M76 58 C72 56 64 56 58 60" fill="none" stroke="#333" stroke-width="0.8" opacity="0.6"/>
+          <path d="M66 35 C68 42 70 52 72 62" fill="none" stroke="#444" stroke-width="0.6" opacity="0.5"/>
+          <path id="llh" d="M38 18 C32 18 18 26 13 38 C8 52 9 68 14 78 C18 85 25 87 30 83 C34 80 35 72 35 62 L35 28 C35 22 36 18 38 18Z" fill="url(#lg-health)" opacity="0"/>
+          <path id="lrh" d="M52 18 C58 18 72 26 77 38 C82 52 81 68 76 78 C72 85 65 87 60 83 C56 80 55 72 55 62 L55 28 C55 22 54 18 52 18Z" fill="url(#lg-health)" opacity="0"/>
+        </svg>
+        <div class="linfo">
+          <div class="lpct" id="lpct">0%</div>
+          <div class="lstatus" id="lstatus">Procesul de recuperare a început...</div>
+          <div class="lbarbg"><div class="lbarfill" id="lbar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bsec">
+    <div class="sectitle">🏆 REALIZĂRI</div>
+    <div class="bscroll" id="badge-list"></div>
+  </div>
+  <div class="pbanner" onclick="goTab('premium')">
+    <div><div class="pbtext">👑 PREMIUM — 7 ZILE GRATUIT</div><div class="pbsub">Statistici, reminder-e, teme vizuale</div></div>
+    <button class="pbbtn">ACTIVEAZĂ</button>
+  </div>
+  <div class="msec">
+    <div class="sectitle">💬 MESAJ ZILNIC</div>
+    <div class="mcard">
+      <div class="mtext" id="motiv">"Fiecare oră fără fumat este un cadou pentru cei care te iubesc."</div>
+      <button class="mrefresh" onclick="newMotiv()">REÎMPROSPĂTEAZĂ ↺</button>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="nbtn active" id="nh" onclick="goTab('main')"><span class="nicon">🏠</span>ACASĂ</button>
+    <button class="nbtn" id="ns" onclick="goTab('stats')"><span class="nicon">📊</span>STATS</button>
+    <button class="nbtn" onclick="goTab('remind')"><span class="nicon">🔔</span>ALERTE</button>
+    <button class="nbtn" onclick="goTab('premium')"><span class="nicon">👑</span>PRO</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div id="screen-stats" class="screen">
+  <div class="screen-title"><h2>📊 STATISTICI</h2><p id="stats-sub">RAPORT COMPLET</p></div>
+  <div class="statsec"><div class="stlbl">Rezumat</div>
+    <div class="sumgrid">
+      <div class="sumcard"><div class="sumval" id="st-days">0</div><div class="sumlbl">Zile fără fumat</div></div>
+      <div class="sumcard"><div class="sumval" id="st-hrs">0</div><div class="sumlbl">Ore totale</div></div>
+      <div class="sumcard"><div class="sumval" id="st-cigs">0</div><div class="sumlbl">Țigări evitate</div></div>
+      <div class="sumcard"><div class="sumval" id="st-life">0</div><div class="sumlbl">Ore viață câștigate</div></div>
+    </div>
+  </div>
+  <div class="statsec"><div class="stlbl">Bani economisiți</div>
+    <div class="mnycard">
+      <div class="mrow"><span class="mperiod">Azi</span><span class="mamt" id="m-today">0.00 RON</span></div>
+      <div class="mrow"><span class="mperiod">Această săptămână</span><span class="mamt" id="m-week">0.00 RON</span></div>
+      <div class="mrow"><span class="mperiod">Această lună</span><span class="mamt" id="m-month">0.00 RON</span></div>
+      <div class="mrow"><span class="mperiod">Total</span><span class="mamt" id="m-total">0.00 RON</span></div>
+    </div>
+  </div>
+  <div class="statsec"><div class="stlbl">Echivalente</div><div class="eqcard" id="eq-list"></div></div>
+  <div class="statsec"><div class="stlbl">Progres săptămânal</div>
+    <div class="chartcard"><div class="chartbars" id="chart-bars"></div><div style="display:flex;gap:4px" id="chart-lbls"></div></div>
+  </div>
+  <div class="statsec"><div class="stlbl">Recuperarea corpului</div><div class="tlcard" id="tl-list"></div></div>
+  <div class="statsec"><div class="stlbl">Recorduri</div>
+    <div class="reccard">
+      <div class="recrow"><span class="reclbl">🏆 Cea mai lungă serie</span><span class="recval" id="rec-s">0 zile</span></div>
+      <div class="recrow"><span class="reclbl">🚬 Țigări evitate/zi</span><span class="recval" id="rec-c">0</span></div>
+      <div class="recrow"><span class="reclbl">💰 Economii/zi</span><span class="recval" id="rec-m">0 RON</span></div>
+      <div class="recrow"><span class="reclbl">🥇 Primul badge</span><span class="recval" id="rec-b">—</span></div>
+    </div>
+  </div>
+  <div class="statsec"><div class="stlbl">Comparații</div>
+    <div class="cmpcard">
+      <div class="cmprow"><span class="cmplbl">Tu</span><div class="cmpbarbg"><div class="cmpbarfill" style="width:70%;background:linear-gradient(90deg,#7b2fff,#00f5ff)"></div></div><span class="cmpval" id="cmp-you">—</span></div>
+      <div class="cmprow"><span class="cmplbl">Media RO</span><div class="cmpbarbg"><div class="cmpbarfill" style="width:30%;background:#ff2d78"></div></div><span class="cmpval">~8 zile</span></div>
+      <div class="cmprow"><span class="cmplbl">Top 10%</span><div class="cmpbarbg"><div class="cmpbarfill" style="width:100%;background:#FFD700"></div></div><span class="cmpval">90+ zile</span></div>
+      <div class="cmplck" onclick="goTab('premium')"><div style="font-size:32px">🔒</div><div style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--neon);margin-top:8px">PREMIUM</div></div>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="nbtn" onclick="goTab('main')"><span class="nicon">🏠</span>ACASĂ</button>
+    <button class="nbtn active" onclick="goTab('stats')"><span class="nicon">📊</span>STATS</button>
+    <button class="nbtn" onclick="goTab('remind')"><span class="nicon">🔔</span>ALERTE</button>
+    <button class="nbtn" onclick="goTab('premium')"><span class="nicon">👑</span>PRO</button>
+  </div>
+</div>
+
+<!-- REMIND -->
+<div id="screen-remind" class="screen">
+  <div class="screen-title"><h2>🔔 ALERTE</h2><p>CONFIGURARE NOTIFICĂRI</p></div>
+  <div style="margin:0 1.5rem 1.25rem;background:linear-gradient(135deg,rgba(0,245,255,.08),rgba(123,47,255,.08));border:1px solid var(--neon);border-radius:16px;padding:1.25rem;text-align:center">
+    <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:var(--neon);margin-bottom:.5rem">✓ PRO ACTIV — MOD TESTARE</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.5">Toate alertele sunt deblocate pentru testare</div>
+  </div>
+  <div style="padding:0 1.5rem;display:flex;flex-direction:column;gap:10px">
+    <div class="fcard">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div><div style="font-size:14px;font-weight:700">📅 Mesaj zilnic</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:2px">Un mesaj motivațional în fiecare zi</div></div>
+        <div style="color:var(--neon);font-size:16px">✓</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:12px;color:rgba(0,245,255,.4);letter-spacing:1px">ORA</div>
+        <input type="time" value="08:00" class="finput" style="flex:1">
+      </div>
+    </div>
+    <div class="fcard">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div><div style="font-size:14px;font-weight:700">⚠️ Ore de risc</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:2px">Când aveai obiceiul să fumezi</div></div>
+        <div style="color:var(--neon);font-size:16px">✓</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:rgba(0,245,255,.4);width:80px;letter-spacing:.5px">DIMINEAȚA</span><input type="time" value="07:30" class="finput" style="flex:1"></div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:rgba(0,245,255,.4);width:80px;letter-spacing:.5px">PAUZA</span><input type="time" value="10:30" class="finput" style="flex:1"></div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:rgba(0,245,255,.4);width:80px;letter-spacing:.5px">PRÂNZ</span><input type="time" value="13:00" class="finput" style="flex:1"></div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:rgba(0,245,255,.4);width:80px;letter-spacing:.5px">SEARA</span><input type="time" value="21:00" class="finput" style="flex:1"></div>
+      </div>
+    </div>
+    <div class="fcard">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div><div style="font-size:14px;font-weight:700">⏱️ La fiecare X ore</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:2px">Încurajare periodică</div></div>
+        <div style="color:var(--neon);font-size:16px">✓</div>
+      </div>
+      <div style="display:flex;gap:8px" id="freq-btns">
+        <div onclick="selectFreq(this,'2h')" style="background:rgba(0,245,255,.12);border:1px solid var(--neon);border-radius:50px;padding:6px 14px;font-size:13px;color:var(--neon);cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px">2H</div>
+        <div onclick="selectFreq(this,'4h')" style="background:transparent;border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.3);cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px">4H</div>
+        <div onclick="selectFreq(this,'6h')" style="background:transparent;border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.3);cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px">6H</div>
+        <div onclick="selectFreq(this,'8h')" style="background:transparent;border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.3);cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px">8H</div>
+      </div>
+    </div>
+    <div class="fcard">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div><div style="font-size:14px;font-weight:700">📊 Raport săptămânal</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:2px">Rezumatul progresului tău</div></div>
+        <div style="color:var(--neon);font-size:16px">✓</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:12px;color:rgba(0,245,255,.4);letter-spacing:1px">ZIUA</div>
+        <select class="finput" style="flex:1">
+          <option>Duminică</option><option>Luni</option><option>Vineri</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="nbtn" onclick="goTab('main')"><span class="nicon">🏠</span>ACASĂ</button>
+    <button class="nbtn" onclick="goTab('stats')"><span class="nicon">📊</span>STATS</button>
+    <button class="nbtn active"><span class="nicon">🔔</span>ALERTE</button>
+    <button class="nbtn" onclick="goTab('premium')"><span class="nicon">👑</span>PRO</button>
+  </div>
+</div>
+
+<!-- PREMIUM -->
+<div id="screen-premium" class="screen">
+  <div class="screen-title"><h2>👑 PREMIUM</h2><p>DEBLOCHEAZĂ EXPERIENȚA COMPLETĂ</p></div>
+  <div style="margin:0 1.5rem 1.25rem;background:linear-gradient(135deg,rgba(0,245,255,.1),rgba(123,47,255,.1));border:1px solid var(--neon);border-radius:16px;padding:1.25rem;text-align:center;position:relative;overflow:hidden">
+    <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent)"></div>
+    <div style="font-size:12px;color:rgba(0,245,255,.5);letter-spacing:2px;margin-bottom:4px">STATUS ABONAMENT</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--neon);text-shadow:0 0 15px var(--neon)">✓ PRO ACTIV</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:4px">Mod testare — toate funcțiile deblocate</div>
+  </div>
+  <div style="padding:0 1.5rem 1.25rem">
+    <div class="stlbl">Alege planul</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div id="plan-monthly" onclick="selectPlan('monthly')" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;text-align:center;cursor:pointer">
+        <div style="font-size:11px;color:rgba(0,245,255,.4);letter-spacing:1px;margin-bottom:.5rem">LUNAR</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:#fff">4.99</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.3)">RON/lună</div>
+      </div>
+      <div id="plan-yearly" onclick="selectPlan('yearly')" style="background:rgba(0,245,255,.06);border:2px solid var(--neon);border-radius:14px;padding:1.25rem;text-align:center;cursor:pointer">
+        <div style="font-size:11px;color:rgba(0,245,255,.6);letter-spacing:1px;margin-bottom:.5rem">ANUAL</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--neon)">49</div>
+        <div style="font-size:11px;color:rgba(0,245,255,.4)">RON/an</div>
+      </div>
+    </div>
+    <button onclick="startTrial()" style="width:100%;margin-top:12px;background:linear-gradient(135deg,var(--neon2),var(--neon3));color:#fff;border:none;padding:16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px">ACTIVEAZĂ TRIAL GRATUIT 7 ZILE 🚀</button>
+    <div style="font-size:11px;color:rgba(255,255,255,.2);text-align:center;margin-top:8px;letter-spacing:.5px">ANULEZI ORICÂND • FĂRĂ ANGAJAMENTE</div>
+  </div>
+  <div style="padding:0 1.5rem 1.25rem"><div class="stlbl">Beneficii</div>
+    <div class="fcard">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)"><span style="font-size:20px">🔔</span><div><div style="font-size:14px;font-weight:700">Reminder-e complete</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Ore de risc, zilnice, periodice, săptămânale</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)"><span style="font-size:20px">📊</span><div><div style="font-size:14px;font-weight:700">Statistici avansate</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Grafice detaliate și export date</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)"><span style="font-size:20px">✏️</span><div><div style="font-size:14px;font-weight:700">Mesaje personalizate</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Cu numele copilului sau partenerului</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)"><span style="font-size:20px">🏆</span><div><div style="font-size:14px;font-weight:700">Toate badge-urile</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Acces la toate realizările deblocate</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)"><span style="font-size:20px">🎨</span><div><div style="font-size:14px;font-weight:700">Teme vizuale</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Aurora, natură, apus și altele</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0"><span style="font-size:20px">🚫</span><div><div style="font-size:14px;font-weight:700">Fără reclame</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Experiență curată și fără întreruperi</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
+    </div>
+  </div>
+  <div style="padding:0 1.5rem 2rem"><div class="stlbl">Teme vizuale</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="themes-grid">
+      <div onclick="selectTheme('dark')" style="border-radius:14px;overflow:hidden;cursor:pointer;border:2px solid var(--neon)">
+        <div style="height:55px;background:linear-gradient(135deg,#020818,#060d24)"></div>
+        <div style="background:rgba(0,245,255,.05);padding:8px;text-align:center;font-size:12px;color:var(--neon);letter-spacing:.5px">🌑 CYBER <span style="font-size:10px">✓</span></div>
+      </div>
+      <div onclick="selectTheme('aurora')" style="border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid var(--border)">
+        <div style="height:55px;background:linear-gradient(135deg,#0d1b2a,#415a77,#778da9)"></div>
+        <div style="background:rgba(0,245,255,.03);padding:8px;text-align:center;font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.5px">🌌 AURORA</div>
+      </div>
+      <div onclick="selectTheme('nature')" style="border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid var(--border)">
+        <div style="height:55px;background:linear-gradient(135deg,#1a2e1a,#3a6b3a)"></div>
+        <div style="background:rgba(0,245,255,.03);padding:8px;text-align:center;font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.5px">🌿 NATURĂ</div>
+      </div>
+      <div onclick="selectTheme('sunset')" style="border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid var(--border)">
+        <div style="height:55px;background:linear-gradient(135deg,#2e1a0a,#cd853f)"></div>
+        <div style="background:rgba(0,245,255,.03);padding:8px;text-align:center;font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.5px">🌅 APUS</div>
+      </div>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="nbtn" onclick="goTab('main')"><span class="nicon">🏠</span>ACASĂ</button>
+    <button class="nbtn" onclick="goTab('stats')"><span class="nicon">📊</span>STATS</button>
+    <button class="nbtn" onclick="goTab('remind')"><span class="nicon">🔔</span>ALERTE</button>
+    <button class="nbtn active"><span class="nicon">👑</span>PRO</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="pmodal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3>👑 FĂRĂFUM PRO</h3>
+    <p>7 zile gratuit, apoi 4.99 RON/lună</p>
+    <div class="mfeat"><span class="mficon">🔔</span><span class="mftext">Reminder-e complete personalizate</span></div>
+    <div class="mfeat"><span class="mficon">📊</span><span class="mftext">Statistici avansate și comparații</span></div>
+    <div class="mfeat"><span class="mficon">🏆</span><span class="mftext">Toate badge-urile deblocate</span></div>
+    <div class="mfeat"><span class="mficon">🎨</span><span class="mftext">Teme vizuale exclusive</span></div>
+    <button class="modalbtn">ACTIVEAZĂ TRIAL 7 ZILE 🚀</button>
+    <button class="modalclose" onclick="closeModal()">Nu acum</button>
+  </div>
+</div>
+
+<script>
+// CINEMATIC
+var cinDone=false;
+window.addEventListener('message',function(e){if(e.data==='cinDone')skipCin();});
+function skipCin(){if(cinDone)return;cinDone=true;var el=document.getElementById('cinematic');el.style.opacity='0';setTimeout(function(){el.style.display='none';startApp();},600);}
+function startCin(){}
+
+// APP DATA
+var QUOTES=["Fiecare oră fără fumat este un cadou pentru cei care te iubesc.","Copiii tăi au nevoie să te vadă sănătos la nunta lor.","Cel mai bun lucru pe care îl poți face pentru familia ta este să fii prezent.","Plămânii tăi se vindecă. Corpul tău îți mulțumește chiar acum.","Nu renunți la ceva. Câștigi totul: viață, sănătate, timp.","Fiecare zi contată este o victorie pe care nimeni nu ți-o poate lua.","Ești mai puternic decât orice dependență.","Familia ta te iubește — oferă-le mai mult timp cu tine.","Astăzi ești mai puternic decât ieri."];
+var BADGES=[{icon:"⭐",name:"PRIMA ORĂ",hours:.016,free:true},{icon:"🌅",name:"PRIMA ZI",hours:24,free:true},{icon:"🌟",name:"3 ZILE",hours:72,free:true},{icon:"🔥",name:"1 SĂPT.",hours:168,free:false},{icon:"💪",name:"2 SĂPT.",hours:336,free:false},{icon:"🥉",name:"1 LUNĂ",hours:720,free:false},{icon:"🥈",name:"3 LUNI",hours:2160,free:false},{icon:"🥇",name:"6 LUNI",hours:4320,free:false},{icon:"👑",name:"1 AN",hours:8760,free:false}];
+var TIMELINE=[{time:"20 minute",desc:"Tensiunea și pulsul revin la normal.",h:.33},{time:"8 ore",desc:"Monoxidul de carbon scade la jumătate.",h:8},{time:"24 ore",desc:"Riscul de atac de cord scade.",h:24},{time:"48 ore",desc:"Gustul și mirosul se îmbunătățesc.",h:48},{time:"72 ore",desc:"Bronhiile se relaxează.",h:72},{time:"2-12 săpt.",desc:"Circulația se îmbunătățește semnificativ.",h:336},{time:"3-9 luni",desc:"Funcția pulmonară crește cu 30%.",h:2160},{time:"1 an",desc:"Riscul bolilor coronariene s-a înjumătățit.",h:8760},{time:"10 ani",desc:"Riscul de cancer pulmonar scade cu 50%.",h:87600}];
+var EQUIV=[{icon:"☕",name:"Cafele",unit:"cafele",price:8},{icon:"🍕",name:"Pizza",unit:"pizza",price:45},{icon:"🎬",name:"Bilete cinema",unit:"bilete",price:35},{icon:"👟",name:"Adidași",unit:"perechi",price:350}];
+var ud={},timerIv;
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById(id).classList.add('active');}
+
+function startApp(){
+  var now=new Date(),pad=function(n){return String(n).padStart(2,'0');};
+  document.getElementById('quit-date').value=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+'T'+pad(now.getHours())+':'+pad(now.getMinutes());
+  showScreen('screen-setup');
+}
+
+function skipCin(){
+  if(cinDone)return;
+  cinDone=true;
+  var el=document.getElementById('cinematic');
+  el.style.opacity='0';
+  setTimeout(function(){
+    el.style.display='none';
+    if(!loadSaved()) startApp();
+  },600);
+}
+
+function saveSetup(){
+  var qd=document.getElementById('quit-date').value;
+  if(!qd){alert('Selectează data!');return;}
+  ud={quitDate:new Date(qd).getTime(),cpd:parseInt(document.getElementById('cigs-day').value)||20,pp:parseFloat(document.getElementById('pack-price').value)||35,name:document.getElementById('user-name').value||'tu'};
+  localStorage.setItem('farafum_user',JSON.stringify(ud));
+  document.getElementById('header-sub').textContent='FELICITĂRI, '+ud.name.toUpperCase()+'! MISIUNEA A ÎNCEPUT.';
+  showScreen('screen-main');
+  tick();timerIv=setInterval(tick,1000);
+}
+
+function loadSaved(){
+  var saved=localStorage.getItem('farafum_user');
+  if(saved){
+    ud=JSON.parse(saved);
+    document.getElementById('header-sub').textContent='BINE AI REVENIT, '+ud.name.toUpperCase()+'!';
+    showScreen('screen-main');
+    tick();timerIv=setInterval(tick,1000);
+    return true;
+  }
+  return false;
+}
+
+function elapsed(){return Math.max(0,Date.now()-ud.quitDate);}
+
+function tick(){
+  var ms=elapsed(),ts=Math.floor(ms/1000);
+  var days=Math.floor(ts/86400),hrs=Math.floor((ts%86400)/3600),mins=Math.floor((ts%3600)/60),secs=ts%60;
+  document.getElementById('days-c').textContent=days;
+  document.getElementById('hrs-c').textContent=String(hrs).padStart(2,'0');
+  document.getElementById('min-c').textContent=String(mins).padStart(2,'0');
+  document.getElementById('sec-c').textContent=String(secs).padStart(2,'0');
+  var th=ms/3600000,ca=Math.floor(th*(ud.cpd/24)),money=((ca/20)*ud.pp),lh=(ca*11/60);
+  document.getElementById('cigs-av').textContent=ca;
+  document.getElementById('money-s').textContent=money.toFixed(2);
+  document.getElementById('life-g').textContent=lh>24?(lh/24).toFixed(1)+'z':lh.toFixed(1)+'h';
+  document.getElementById('streak-d').textContent=days;
+  var p=Math.min((days%30)/30,1);
+  document.getElementById('ring-prog').setAttribute('stroke-dashoffset',534-(534*p));
+  updateLungs(th);updateBadges(th);
+}
+
+function updateLungs(h){
+  var p=0,s='';
+  if(h<.33){p=2;s='Oxigenul în sânge se normalizează...';}
+  else if(h<8){p=5;s='Monoxidul de carbon scade rapid.';}
+  else if(h<24){p=10;s='Riscul de atac de cord scade deja.';}
+  else if(h<48){p=18;s='Simțul gustului și mirosului revine.';}
+  else if(h<72){p=22;s='Bronhiile se relaxează.';}
+  else if(h<168){p=30;s='Circulația se îmbunătățește vizibil.';}
+  else if(h<720){p=45;s='Funcția pulmonară crește cu 30%!';}
+  else if(h<2160){p=60;s='Tusea și oboseala scad.';}
+  else if(h<4320){p=72;s='Cilii pulmonari se refac activ.';}
+  else if(h<8760){p=82;s='Riscul bolilor pulmonare s-a înjumătățit!';}
+  else{p=95;s='Plămânii aproape complet sănătoși! 🌿';}
+  document.getElementById('lpct').textContent=p+'%';
+  document.getElementById('lstatus').textContent=s;
+  document.getElementById('lbar').style.width=p+'%';
+  var r=Math.round(58+155*p/100),g=Math.round(26+149*p/100),b=Math.round(26+26*p/100);
+  var fc='rgb('+r+','+g+','+b+')';
+  var c1=document.getElementById('lg-left-c1');if(c1)c1.setAttribute('stop-color',fc);
+  var c2=document.getElementById('lg-left-c2');if(c2)c2.setAttribute('stop-color','rgb('+Math.round(r*.5)+','+Math.round(g*.5)+','+Math.round(b*.5)+')');
+  var c3=document.getElementById('lg-right-c1');if(c3)c3.setAttribute('stop-color',fc);
+  var c4=document.getElementById('lg-right-c2');if(c4)c4.setAttribute('stop-color','rgb('+Math.round(r*.5)+','+Math.round(g*.5)+','+Math.round(b*.5)+')');
+  var h1=document.getElementById('lgh1');if(h1)h1.setAttribute('stop-opacity',(p/120).toFixed(2));
+  var h2=document.getElementById('lgh2');if(h2)h2.setAttribute('stop-opacity',(p/100).toFixed(2));
+  document.getElementById('llh').setAttribute('opacity',(p/180).toFixed(2));
+  document.getElementById('lrh').setAttribute('opacity',(p/180).toFixed(2));
+}
+
+var PRO_MODE=true; // TEST MODE - toate functiile pro deblocate
+
+function updateBadges(h){
+  document.getElementById('badge-list').innerHTML=BADGES.map(function(b){
+    var e=h>=b.hours||PRO_MODE;
+    return'<div class="badge'+(e?' earned':'')+'"><div class="badge-icon">'+(h>=b.hours?b.icon:PRO_MODE?b.icon:'🔒')+'</div><div class="badge-name">'+b.name+'</div></div>';
+  }).join('');
+}
+
+function goTab(tab){
+  document.querySelectorAll('.nbtn').forEach(function(b){b.classList.remove('active');});
+  if(tab==='main'){showScreen('screen-main');}
+  else if(tab==='stats'){showScreen('screen-stats');buildStats();}
+  else if(tab==='remind'){showScreen('screen-remind');}
+  else if(tab==='premium'){showScreen('screen-premium');buildPremium();}
+}
+
+function buildStats(){
+  var ms=elapsed(),th=ms/3600000,days=Math.floor(th/24);
+  var ca=Math.floor(th*(ud.cpd/24)),total=((ca/20)*ud.pp),lh=(ca*11/60);
+  var dpd=(ud.cpd/20)*ud.pp;
+  document.getElementById('stats-sub').textContent='RAPORT PENTRU '+ud.name.toUpperCase();
+  document.getElementById('st-days').textContent=days;
+  document.getElementById('st-hrs').textContent=Math.floor(th);
+  document.getElementById('st-cigs').textContent=ca;
+  document.getElementById('st-life').textContent=lh.toFixed(1);
+  document.getElementById('m-today').textContent=Math.min(total,dpd).toFixed(2)+' RON';
+  document.getElementById('m-week').textContent=Math.min(total,dpd*7).toFixed(2)+' RON';
+  document.getElementById('m-month').textContent=Math.min(total,dpd*30).toFixed(2)+' RON';
+  document.getElementById('m-total').textContent=total.toFixed(2)+' RON';
+  document.getElementById('cmp-you').textContent=days+' zile';
+  document.getElementById('rec-s').textContent=days+' zile';
+  document.getElementById('rec-c').textContent=ud.cpd+'/zi';
+  document.getElementById('rec-m').textContent=dpd.toFixed(2)+' RON';
+  var fb=BADGES.find(function(b){return th>=b.hours;});
+  document.getElementById('rec-b').textContent=fb?fb.name:'Niciunul încă';
+  document.getElementById('eq-list').innerHTML=EQUIV.map(function(e){var q=total/e.price,p=Math.min(q/10*100,100);return'<div class="eqitem"><div class="eqicon">'+e.icon+'</div><div class="eqtext"><div class="eqname">'+e.name+'</div><div class="eqval">'+q.toFixed(1)+' '+e.unit+'</div><div class="eqbarbg"><div class="eqbarfill" style="width:'+p+'%"></div></div></div></div>';}).join('');
+  var bars=document.getElementById('chart-bars'),lbls=document.getElementById('chart-lbls');
+  bars.innerHTML='';lbls.innerHTML='';
+  for(var i=6;i>=0;i--){var d=days-i;var v=d<=0?0:ud.cpd;var h2=Math.round((v/(ud.cpd*1.2))*74)+4;bars.innerHTML+='<div class="cbwrap"><div class="cbar" style="height:'+h2+'px"></div></div>';lbls.innerHTML+='<div style="flex:1;text-align:center;font-size:9px;color:rgba(0,245,255,.3)">'+(d<=0?'—':'Z'+d)+'</div>';}
+  document.getElementById('tl-list').innerHTML=TIMELINE.map(function(t,i){var done=th>=t.h,next=!done&&(i===0||th>=TIMELINE[i-1].h);return'<div class="tlitem"><div class="tldot '+(done?'done':next?'next':'future')+'"></div><div><div class="tltitle '+(done||next?'':'future')+'">'+(done?'✓ ':next?'→ ':'')+t.time+'</div><div class="tlsub">'+t.desc+'</div></div></div>';}).join('');
+}
+
+function selectFreq(el,val){
+  var btns=document.getElementById('freq-btns').children;
+  for(var i=0;i<btns.length;i++){
+    btns[i].style.background='transparent';
+    btns[i].style.borderColor='rgba(0,245,255,.15)';
+    btns[i].style.color='rgba(255,255,255,.3)';
+  }
+  el.style.background='rgba(0,245,255,.12)';
+  el.style.borderColor='var(--neon)';
+  el.style.color='var(--neon)';
+}
+
+function buildPremium(){}
+
+function selectPlan(p){
+  document.getElementById('plan-monthly').style.border='1px solid rgba(0,245,255,.15)';
+  document.getElementById('plan-yearly').style.border='1px solid rgba(0,245,255,.15)';
+  if(p==='monthly'){document.getElementById('plan-monthly').style.border='2px solid var(--neon)';}
+  else{document.getElementById('plan-yearly').style.border='2px solid var(--neon)';}
+}
+
+function selectTheme(t){
+  var cards=document.getElementById('themes-grid').children;
+  var names=['dark','aurora','nature','sunset'],labels=['🌑 CYBER ✓','🌌 AURORA','🌿 NATURĂ','🌅 APUS'];
+  for(var i=0;i<cards.length;i++){
+    var isActive=names[i]===t;
+    cards[i].style.border=isActive?'2px solid var(--neon)':'1px solid rgba(0,245,255,.15)';
+    cards[i].lastElementChild.style.color=isActive?'var(--neon)':'rgba(255,255,255,.4)';
+    cards[i].lastElementChild.textContent=labels[i];
+  }
+}
+
+function startTrial(){alert('Trial Premium activat! 🎉\nÎn versiunea finală aici va fi integrarea cu Stripe.');}
+function newMotiv(){var el=document.getElementById('motiv');el.style.opacity='0';setTimeout(function(){el.textContent='"'+QUOTES[Math.floor(Math.random()*QUOTES.length)]+'"';el.style.opacity='1';},200);}
+function showModal(){document.getElementById('pmodal').style.display='flex';}
+function closeModal(){document.getElementById('pmodal').style.display='none';}
+</script>
+</body>
+</html>
