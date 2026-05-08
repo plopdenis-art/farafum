@@ -2,731 +2,1459 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FărăFum</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Rajdhani',system-ui,sans-serif;background:#020818;color:#fff;min-height:100vh;overflow-x:hidden}
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0d1a12;--bg2:#111f16;--bg3:#162119;
+    --green:#4ade80;--gold:#f4c842;--gold2:#e6b730;
+    --text:#e8f5e9;--text2:#a5c8a8;--text3:#6a9b6e;
+    --card:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.08);
+    --red:#f87171;--blue:#60a5fa;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+  #app{height:100vh;display:flex;flex-direction:column;max-width:430px;margin:0 auto}
+  #screens{flex:1;overflow:hidden;position:relative}
+  .screen{position:absolute;inset:0;overflow-y:auto;padding:1.5rem 1.25rem 1rem;display:none;animation:fadeIn .25s ease}
+  .screen.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-/* FUTURISTIC BASE */
-:root{
-  --neon:#00f5ff;
-  --neon2:#7b2fff;
-  --neon3:#ff2d78;
-  --bg:#020818;
-  --bg2:#060d24;
-  --card:rgba(0,245,255,0.04);
-  --border:rgba(0,245,255,0.15);
-  --border2:rgba(123,47,255,0.3);
-}
+  #screen-setup.active{display:flex;flex-direction:column;justify-content:center;min-height:100%}
 
-/* GRID BACKGROUND */
-body::before{
-  content:'';position:fixed;inset:0;
-  background-image:linear-gradient(rgba(0,245,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,0.03) 1px,transparent 1px);
-  background-size:40px 40px;pointer-events:none;z-index:0;
-}
+  #intro-overlay{position:fixed;inset:0;z-index:999;background:#0a1208;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+  #intro-overlay.hidden{display:none}
+  .intro-scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem;opacity:0;transition:opacity 1.2s ease;pointer-events:none;text-align:center}
+  .intro-scene.visible{opacity:1}
+  .intro-emoji{font-size:4rem;margin-bottom:1.2rem;animation:pulse-soft 2s ease-in-out infinite}
+  @keyframes pulse-soft{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+  .intro-line1{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--text);line-height:1.4;margin-bottom:.6rem}
+  .intro-line2{font-size:.95rem;color:var(--text2);line-height:1.7;max-width:300px}
+  .intro-skip{position:absolute;bottom:2.5rem;right:1.5rem;background:none;border:1px solid var(--border);color:var(--text3);border-radius:20px;padding:.35rem .9rem;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;z-index:10}
+  .intro-dots{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10}
+  .intro-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:background .4s}
+  .intro-dot.active{background:var(--green)}
+  .intro-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .particle{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--green);opacity:0;animation:float-up linear infinite}
+  @keyframes float-up{0%{opacity:0;transform:translateY(0)}20%{opacity:.5}80%{opacity:.2}100%{opacity:0;transform:translateY(-110vh)}}
+  .setup-title{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--green);margin-bottom:.3rem}
+  .setup-sub{color:var(--text2);font-size:.85rem;margin-bottom:1.5rem}
+  .field{margin-bottom:1rem}
+  .field label{display:block;font-size:.75rem;color:var(--text3);margin-bottom:.35rem;letter-spacing:.04em;text-transform:uppercase}
+  .field input,.field select{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.65rem .9rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;outline:none}
+  .field input:focus,.field select:focus{border-color:var(--green)}
+  .field select option{background:#1a2a1e}
+  .btn-primary{width:100%;background:linear-gradient(135deg,var(--green),#22c55e);color:#0d1a12;font-weight:600;font-size:1rem;border:none;border-radius:12px;padding:.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:.5rem}
+  .btn-primary:active{opacity:.85}
 
-.screen{display:none;min-height:100vh;flex-direction:column;position:relative;z-index:1}
-.screen.active{display:flex}
+  .home-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem}
+  .home-greeting{font-size:.85rem;color:var(--text2)}
+  .home-name{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text)}
+  .streak-badge{background:rgba(244,200,66,.15);border:1px solid rgba(244,200,66,.3);border-radius:20px;padding:.3rem .75rem;font-size:.8rem;color:var(--gold);display:flex;align-items:center;gap:.3rem}
 
-/* GLOW EFFECTS */
-.glow{text-shadow:0 0 20px var(--neon),0 0 40px var(--neon)}
-.glow2{text-shadow:0 0 20px var(--neon2),0 0 40px var(--neon2)}
-.glow3{text-shadow:0 0 20px var(--neon3)}
+  .timer-ring{display:flex;flex-direction:column;align-items:center;margin:0 auto 1.2rem;position:relative;width:180px;height:180px}
+  .timer-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+  .timer-ring circle.track{fill:none;stroke:var(--border);stroke-width:6}
+  .timer-ring circle.prog{fill:none;stroke:var(--green);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+  .timer-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .timer-val{font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--text);line-height:1}
+  .timer-label{font-size:.7rem;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-top:.2rem}
 
-/* CARDS */
-.fcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem;position:relative;overflow:hidden}
-.fcard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent)}
+  .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.9rem;text-align:center}
+  .stat-val{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--green)}
+  .stat-label{font-size:.72rem;color:var(--text3);margin-top:.15rem}
 
-/* NEON BUTTON */
-.nbtn-neon{background:transparent;border:1px solid var(--neon);color:var(--neon);padding:14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;width:100%;font-family:'Rajdhani',sans-serif;letter-spacing:1px;transition:all .3s;position:relative;overflow:hidden}
-.nbtn-neon:hover{background:rgba(0,245,255,.1);box-shadow:0 0 20px rgba(0,245,255,.3)}
-.nbtn-neon.primary{background:linear-gradient(135deg,rgba(0,245,255,.15),rgba(123,47,255,.15));border-color:var(--neon2);color:#fff;box-shadow:0 0 30px rgba(123,47,255,.2)}
+  .section-title{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem}
+  .mission-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.9rem}
+  .mission-icon{font-size:1.5rem;flex-shrink:0}
+  .mission-text{font-size:.9rem;color:var(--text2);line-height:1.4}
+  .mission-done{font-size:.75rem;color:var(--green);margin-top:.2rem}
 
-/* INPUTS */
-.finput{width:100%;background:rgba(0,245,255,.05);border:1px solid var(--border);border-radius:10px;padding:12px;color:#fff;font-size:15px;outline:none;font-family:'Rajdhani',sans-serif}
-.finput:focus{border-color:var(--neon);box-shadow:0 0 15px rgba(0,245,255,.15)}
+  .craving-btn{width:100%;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:12px;padding:.8rem;font-family:'DM Sans',sans-serif;font-size:.9rem;cursor:pointer;margin-bottom:.5rem}
+  .craving-btn:active{background:rgba(248,113,113,.2)}
 
-/* NAV */
-.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(2,8,24,.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 16px;z-index:50}
-.nbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(0,245,255,.3);cursor:pointer;padding:6px 0;font-size:10px;font-family:'Rajdhani',sans-serif;letter-spacing:.5px;transition:color .3s}
-.nbtn.active{color:var(--neon);text-shadow:0 0 10px var(--neon)}
-.nicon{font-size:20px}
+  .stats-big-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:.75rem}
+  .sbig-val{font-family:'Playfair Display',serif;font-size:2rem;color:var(--gold)}
+  .sbig-label{font-size:.8rem;color:var(--text2);margin-top:.2rem}
+  .sbig-sub{font-size:.72rem;color:var(--text3);margin-top:.3rem}
 
-/* CINEMATIC */
-#cinematic{position:fixed;inset:0;z-index:200;background:#020818;transition:opacity .6s}
+  .timeline{margin-top:1rem}
+  .tl-item{display:flex;gap:.9rem;padding-bottom:1rem;position:relative}
+  .tl-item:not(:last-child)::after{content:'';position:absolute;left:15px;top:32px;bottom:0;width:1px;background:var(--border)}
+  .tl-dot{width:30px;height:30px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+  .tl-dot.done{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.4)}
+  .tl-content{padding-top:.3rem}
+  .tl-title{font-size:.9rem;color:var(--text)}
+  .tl-time{font-size:.75rem;color:var(--text3);margin-top:.1rem}
 
-/* SETUP */
-#screen-setup{background:var(--bg);padding:2rem 1.5rem;align-items:center}
-.setup-logo{font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--neon),var(--neon2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem;text-align:center}
-.setup-sub{font-size:14px;color:rgba(0,245,255,.5);text-align:center;margin-bottom:2rem;letter-spacing:1px}
-.slabel{font-size:12px;color:rgba(0,245,255,.6);margin-bottom:.5rem;letter-spacing:1px;text-transform:uppercase}
-.srow{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .health-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+  .health-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.9rem}
+  .health-icon{font-size:1.3rem;margin-bottom:.4rem}
+  .health-name{font-size:.8rem;color:var(--text);font-weight:500}
+  .health-time{font-size:.7rem;color:var(--text3);margin-top:.15rem}
+  .health-bar-wrap{height:4px;background:var(--border);border-radius:2px;margin-top:.5rem}
+  .health-bar{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--green),var(--gold));transition:width 1s ease}
 
-/* MAIN */
-#screen-main,#screen-stats,#screen-remind,#screen-premium{background:var(--bg);padding-bottom:80px;overflow-y:auto}
+  .journal-add{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem}
+  .journal-row{display:flex;gap:.5rem;margin-bottom:.65rem}
+  .journal-row select,.journal-row input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:.5rem .7rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none}
+  .journal-row select option{background:#1a2a1e}
+  textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;resize:none;margin-bottom:.65rem}
+  .btn-sm{background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);color:var(--green);border-radius:8px;padding:.45rem .9rem;font-size:.82rem;cursor:pointer;font-family:'DM Sans',sans-serif}
+  .journal-entry{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.8rem;margin-bottom:.6rem}
+  .je-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem}
+  .je-trigger{font-size:.8rem;color:var(--text3)}
+  .je-intensity{font-size:.75rem;background:rgba(248,113,113,.15);color:var(--red);border-radius:20px;padding:.15rem .5rem}
+  .je-note{font-size:.85rem;color:var(--text2)}
 
-.app-header{padding:1.5rem 1.5rem .5rem;text-align:center}
-.app-logo{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--neon),var(--neon2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px}
-.app-sub{font-size:13px;color:rgba(0,245,255,.5);margin-top:4px;letter-spacing:.5px}
+  .settings-section{margin-bottom:1.2rem}
+  .settings-row{display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid var(--border)}
+  .settings-row:last-child{border-bottom:none}
+  .sr-label{font-size:.9rem;color:var(--text2)}
+  .sr-val{font-size:.85rem;color:var(--text3)}
+  .sr-link{font-size:.85rem;color:var(--green);cursor:pointer}
 
-/* TIMER */
-.timer-section{padding:1.5rem;text-align:center}
-.timer-ring{width:190px;height:190px;margin:0 auto 1rem;position:relative}
-.timer-ring svg{transform:rotate(-90deg);filter:drop-shadow(0 0 8px var(--neon))}
-.timer-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.tdays{font-family:'Orbitron',sans-serif;font-size:42px;font-weight:900;color:var(--neon);line-height:1;text-shadow:0 0 20px var(--neon),0 0 40px var(--neon)}
-.tlbl{font-size:11px;color:rgba(0,245,255,.5);margin-top:4px;letter-spacing:2px;text-transform:uppercase}
-.timer-hms{display:flex;gap:1rem;justify-content:center;margin-top:.75rem}
-.tunit{text-align:center;background:rgba(0,245,255,.05);border:1px solid var(--border);border-radius:10px;padding:8px 16px}
-.tnum{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:#fff}
-.thms{font-size:10px;color:rgba(0,245,255,.5);margin-top:2px;letter-spacing:1px;text-transform:uppercase}
+  #nav{background:var(--bg2);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:.6rem 0 .5rem;flex-shrink:0}
+  .nav-btn{display:flex;flex-direction:column;align-items:center;gap:.2rem;background:none;border:none;cursor:pointer;padding:.3rem .6rem;border-radius:10px;transition:background .15s}
+  .nav-btn:active{background:var(--card)}
+  .nav-btn svg{width:22px;height:22px;stroke:var(--text3);stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:stroke .15s}
+  .nav-btn span{font-size:.62rem;color:var(--text3);transition:color .15s;font-family:'DM Sans',sans-serif}
+  .nav-btn.active svg{stroke:var(--green)}
+  .nav-btn.active span{color:var(--green)}
 
-/* STATS GRID */
-.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 1.5rem 1rem}
-.scard2{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;position:relative;overflow:hidden}
-.scard2::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent)}
-.sicon{font-size:22px;margin-bottom:4px}
-.sval{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--neon)}
-.slab{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;letter-spacing:.5px}
+  .lungs-wrap{display:flex;justify-content:center;margin:1rem 0}
+  .lungs-svg .lung-fill{transition:opacity 2s ease}
 
-/* SECTION TITLE */
-.sectitle{font-size:12px;font-weight:700;color:rgba(0,245,255,.6);margin-bottom:.75rem;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
-.sectitle::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+  .badges-row{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.5rem}
+  .badge-item{display:flex;flex-direction:column;align-items:center;gap:.25rem;width:60px}
+  .badge-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;border:2px solid var(--border)}
+  .badge-icon.unlocked{border-color:var(--gold);background:rgba(244,200,66,.1)}
+  .badge-icon.locked{opacity:.35}
+  .badge-name{font-size:.6rem;color:var(--text3);text-align:center;line-height:1.3}
 
-/* LUNGS */
-.lsec{padding:0 1.5rem 1rem}
-.lcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem;position:relative;overflow:hidden}
-.lcard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent)}
-.lwrap{display:flex;align-items:center;gap:1rem}
-.linfo{flex:1}
-.lpct{font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--neon);text-shadow:0 0 15px var(--neon)}
-.lstatus{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px;line-height:1.5}
-.lbarbg{background:rgba(0,245,255,.08);border-radius:50px;height:6px;margin-top:10px;overflow:hidden;border:1px solid var(--border)}
-.lbarfill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--neon2),var(--neon));box-shadow:0 0 10px var(--neon);transition:width .5s}
+  .page-title{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:1.2rem;color:var(--text)}
+  .relapse-btn{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text3);border-radius:12px;padding:.7rem;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;margin-top:.5rem}
+  .daily-msg{background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.15);border-radius:12px;padding:.9rem 1rem;margin-bottom:.75rem;font-size:.85rem;color:var(--text2);line-height:1.5;font-style:italic}
 
-/* BADGES */
-.bsec{padding:0 1.5rem 1rem}
-.bscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
-.badge{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;min-width:90px;text-align:center;flex-shrink:0}
-.badge.earned{background:rgba(0,245,255,.08);border-color:var(--neon);box-shadow:0 0 15px rgba(0,245,255,.15)}
-.badge-icon{font-size:24px;margin-bottom:4px}
-.badge-name{font-size:11px;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.5px}
-.badge.earned .badge-name{color:var(--neon)}
-.badge-locked{filter:grayscale(1);opacity:.3}
+  .theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin-top:.5rem}
+  .theme-card{cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid transparent;transition:border-color .2s}
+  .theme-card.active{border-color:var(--green)}
+  .theme-preview{height:40px;width:100%}
+  .theme-name{font-size:.62rem;color:var(--text3);text-align:center;padding:.3rem .2rem}
 
-/* MOTIVATIONAL */
-.msec{padding:0 1.5rem 1rem}
-.mcard{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:1.25rem;text-align:center;position:relative;overflow:hidden}
-.mcard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon2),transparent)}
-.mtext{font-size:14px;color:rgba(255,255,255,.7);line-height:1.7;font-style:italic;transition:opacity .2s}
-.mrefresh{background:none;border:1px solid var(--border2);color:var(--neon2);padding:8px 20px;border-radius:50px;font-size:12px;cursor:pointer;margin-top:10px;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
+  .ai-msg{padding:.6rem .8rem;border-radius:10px;font-size:.82rem;line-height:1.5;max-width:85%}
+  .ai-msg-bot{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:var(--text2);align-self:flex-start}
+  .ai-msg-user{background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--text);align-self:flex-end}
+  .ai-typing{color:var(--text3);font-size:.8rem;font-style:italic;align-self:flex-start;padding:.4rem .8rem}
+  .ai-quick{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text3);border-radius:20px;padding:.25rem .6rem;font-size:.7rem;cursor:pointer;font-family:'DM Sans',sans-serif}
+  .ai-quick:active{background:rgba(74,222,128,.1);color:var(--green)}
 
-/* PREMIUM BANNER */
-.pbanner{margin:0 1.5rem 1rem;background:linear-gradient(135deg,rgba(123,47,255,.2),rgba(255,45,120,.2));border:1px solid rgba(123,47,255,.4);border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
-.pbtext{font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px}
-.pbsub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
-.pbbtn{background:linear-gradient(135deg,var(--neon2),var(--neon3));color:#fff;border:none;padding:6px 14px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif}
+  .cal-dow{font-size:.65rem;color:var(--text3);text-align:center;padding:.3rem 0;text-transform:uppercase}
+  .cal-day{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.72rem;cursor:default;transition:transform .15s}
+  .cal-day.smoke-free{background:rgba(74,222,128,.25);color:var(--green);font-weight:600;border:1px solid rgba(74,222,128,.3)}
+  .cal-day.smoke-free.today{background:rgba(74,222,128,.45);transform:scale(1.1);border-color:var(--green)}
+  .cal-day.relapse{background:rgba(248,113,113,.2);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+  .cal-day.future{background:rgba(255,255,255,.03);color:var(--text3)}
+  .cal-day.empty{background:transparent}
 
-/* STATS SCREEN */
-.stats-header{padding:1.5rem 1.5rem .5rem;text-align:center}
-.statsec{padding:0 1.5rem 1.25rem}
-.stlbl{font-size:12px;font-weight:700;color:rgba(0,245,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.stlbl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
-.sumgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.sumcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;position:relative;overflow:hidden}
-.sumcard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon2),transparent)}
-.sumval{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:800;color:var(--neon)}
-.sumlbl{font-size:11px;color:rgba(255,255,255,.4);margin-top:3px}
-.mnycard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
-.mrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,245,255,.06)}
-.mrow:last-child{border-bottom:none}
-.mperiod{font-size:13px;color:rgba(255,255,255,.4)}
-.mamt{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:var(--neon)}
-.eqcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
-.eqitem{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(0,245,255,.06)}
-.eqitem:last-child{border-bottom:none}
-.eqicon{font-size:22px;width:36px;text-align:center}
-.eqname{font-size:13px;color:rgba(255,255,255,.6)}
-.eqval{font-size:12px;color:rgba(0,245,255,.5);margin-top:1px}
-.eqbarbg{background:rgba(0,245,255,.08);border-radius:50px;height:4px;margin-top:4px;overflow:hidden}
-.eqbarfill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--neon2),var(--neon))}
-.chartcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
-.chartbars{display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:6px}
-.cbwrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.cbar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--neon),var(--neon2));box-shadow:0 0 8px rgba(0,245,255,.3);min-height:4px}
-.tlcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
-.tlitem{display:flex;gap:12px;margin-bottom:12px}
-.tlitem:last-child{margin-bottom:0}
-.tldot{width:12px;height:12px;border-radius:50%;margin-top:3px;flex-shrink:0}
-.tldot.done{background:var(--neon);box-shadow:0 0 8px var(--neon)}
-.tldot.next{background:transparent;border:2px solid var(--neon)}
-.tldot.future{background:#222}
-.tltitle{font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px}
-.tltitle.future{color:rgba(255,255,255,.3)}
-.tlsub{font-size:12px;color:rgba(255,255,255,.4);margin-top:2px}
-.reccard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
-.recrow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)}
-.recrow:last-child{border-bottom:none}
-.reclbl{font-size:13px;color:rgba(255,255,255,.4)}
-.recval{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:#fff}
-.cmpcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem;position:relative;overflow:hidden}
-.cmprow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.cmplbl{font-size:12px;color:rgba(255,255,255,.4);width:60px}
-.cmpbarbg{flex:1;background:rgba(0,245,255,.08);border-radius:50px;height:8px;overflow:hidden}
-.cmpbarfill{height:100%;border-radius:50px}
-.cmpval{font-size:12px;color:#fff;width:50px;text-align:right}
-.cmplck{position:absolute;inset:0;background:rgba(2,8,24,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:16px;cursor:pointer;border:1px solid var(--border)}
+  .reward-bar-wrap{height:10px;background:var(--border);border-radius:5px;overflow:hidden;margin:.5rem 0}
+  .reward-bar{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width 1s ease}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:flex;align-items:flex-end;justify-content:center}
-.modal{background:#060d24;border:1px solid var(--border);border-bottom:none;border-radius:24px 24px 0 0;padding:2rem 1.5rem;width:100%;max-width:420px}
-.modal h3{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;margin-bottom:.5rem;color:var(--neon)}
-.modal p{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:1.5rem}
-.mfeat{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
-.mficon{font-size:22px;width:36px;text-align:center}
-.mftext{font-size:14px;color:rgba(255,255,255,.7)}
-.modalbtn{background:linear-gradient(135deg,var(--neon2),var(--neon3));color:#fff;border:none;padding:16px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;width:100%;margin-top:1rem;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
-.modalclose{background:none;border:none;color:rgba(255,255,255,.3);font-size:14px;cursor:pointer;width:100%;text-align:center;margin-top:.75rem;font-family:'Rajdhani',sans-serif}
+  .plant{display:inline-flex;flex-direction:column;align-items:center;gap:.15rem;padding:.4rem;background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.15);border-radius:10px;min-width:60px}
+  .plant-emoji{font-size:2rem;animation:sway 3s ease-in-out infinite}
+  .plant-name{font-size:.6rem;color:var(--text3);text-align:center}
+  @keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+  .plant.locked{opacity:.25;filter:grayscale(1)}
 
-/* CDOT */
-.cdot{width:8px;height:8px;border-radius:50%;background:rgba(0,245,255,.2)}
-.cdot.on{background:var(--neon);box-shadow:0 0 8px var(--neon)}
+  .milestone-row{display:flex;align-items:center;gap:.8rem;padding:.65rem 0;border-bottom:1px solid var(--border)}
+  .milestone-row:last-child{border-bottom:none}
+  .milestone-plant{font-size:1.4rem;width:32px;text-align:center}
+  .milestone-info{flex:1}
+  .milestone-name{font-size:.85rem;color:var(--text)}
+  .milestone-days{font-size:.72rem;color:var(--text3);margin-top:.1rem}
+  .milestone-status{font-size:.75rem;padding:.2rem .5rem;border-radius:20px}
+  .milestone-status.done{background:rgba(74,222,128,.15);color:var(--green)}
+  .milestone-status.pending{background:rgba(255,255,255,.05);color:var(--text3)}
 
-/* REMIND / PREMIUM SCREENS */
-.screen-title{padding:1.5rem 1.5rem .75rem;text-align:center}
-.screen-title h2{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--neon);text-shadow:0 0 15px var(--neon)}
-.screen-title p{font-size:13px;color:rgba(0,245,255,.4);margin-top:4px;letter-spacing:.5px}
+  .pm-row{display:grid;grid-template-columns:1fr 80px 80px;padding:.55rem .8rem;border-bottom:1px solid var(--border);align-items:center;font-size:.8rem;color:var(--text2)}
+  .pm-check{text-align:center;font-size:.9rem}
+  .pm-check.green{color:var(--green)}
+  .pm-check.red{color:var(--text3)}
+
+  .plan-card{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:.9rem;cursor:pointer;transition:border-color .2s;text-align:center}
+  .plan-card.active-plan{border-color:var(--gold);background:rgba(244,200,66,.07)}
+
+  .badge-locked-premium{position:relative}
+  .badge-locked-premium::after{content:'✨';position:absolute;top:-4px;right:-4px;font-size:.6rem;background:var(--gold);border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center}
 </style>
 </head>
-<body onload="startCin()">
+<body>
 
-<!-- CINEMATIC -->
-<div id="cinematic" style="position:fixed;inset:0;z-index:200;background:#020818;transition:opacity .6s">
-<iframe id="cin-frame" style="width:100%;height:calc(100% - 60px);border:none" srcdoc='
-<!DOCTYPE html><html><head><style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#020818;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui,sans-serif;transition:background .8s}
-body::before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(0,245,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
-#em{font-size:90px;text-align:center;margin-bottom:1.5rem;line-height:1.2;position:relative;z-index:1;filter:drop-shadow(0 0 20px rgba(0,245,255,.5))}
-#ti{font-size:21px;font-weight:700;color:#fff;text-align:center;margin-bottom:.75rem;line-height:1.4;padding:0 2rem;position:relative;z-index:1;text-shadow:0 0 20px rgba(0,245,255,.5)}
-#su{font-size:14px;color:rgba(0,245,255,.6);text-align:center;line-height:1.6;padding:0 2rem;position:relative;z-index:1;letter-spacing:.5px}
-#dots{display:flex;gap:8px;margin-top:2rem;position:relative;z-index:1}
-.d{width:8px;height:8px;border-radius:50%;background:rgba(0,245,255,.2)}
-.d.on{background:#00f5ff;box-shadow:0 0 8px #00f5ff}
-</style></head>
-<body onload="run()">
-<div id="em">👨‍👩‍👧‍👦</div>
-<div id="ti">Familia ta te așteaptă</div>
-<div id="su">Fiecare zi contează pentru ei</div>
-<div id="dots"><div class="d on"></div><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div></div>
-<script>
-var S=[
-  {e:"👨‍👩‍👧‍👦",t:"Familia ta te așteaptă",s:"Fiecare zi contează pentru ei",bg:"#020818"},
-  {e:"👶",t:"Copilul tău are nevoie de tine",s:"Sănătos, prezent și viu lângă el",bg:"#020d1a"},
-  {e:"🫁",t:"Plămânii tăi se vindecă acum",s:"Cu fiecare oră câștigi viață",bg:"#021408"},
-  {e:"❤️",t:"Inima ta bate mai puternic",s:"Și ei o simt în fiecare îmbrățișare",bg:"#180208"},
-  {e:"🌟",t:"Tu poți face asta!",s:"Mii de oameni au reușit. Acum e rândul tău.",bg:"#0d0818"}
-];
-var i=0;
-function show(n){
-  document.body.style.background=S[n].bg;
-  document.getElementById("em").innerHTML=S[n].e;
-  document.getElementById("ti").innerHTML=S[n].t;
-  document.getElementById("su").innerHTML=S[n].s;
-  var ds=document.getElementsByClassName("d");
-  for(var j=0;j<ds.length;j++) ds[j].className="d"+(j===n?" on":"");
-}
-function run(){
-  show(0);
-  setInterval(function(){i++;if(i>=S.length){window.parent.postMessage("cinDone","*");return;}show(i);},2000);
-}
-</script></body></html>
-'></iframe>
-<button onclick="skipCin()" style="position:absolute;bottom:0;left:0;right:0;height:60px;background:rgba(2,8,24,.9);border:none;border-top:1px solid rgba(0,245,255,.15);color:rgba(0,245,255,.6);font-size:15px;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:2px">SARI PESTE ›</button>
+<div id="intro-overlay">
+  <div class="intro-particles" id="intro-particles"></div>
+  <div class="intro-scene" id="scene-0">
+    <div class="intro-emoji">👶</div>
+    <div class="intro-line1">Există oameni care te iubesc</div>
+    <div class="intro-line2">Copiii tăi. Părinții tăi. Cei care vor să te vadă sănătos, în fiecare dimineață.</div>
+  </div>
+  <div class="intro-scene" id="scene-1">
+    <div class="intro-emoji">🫁</div>
+    <div class="intro-line1">Corpul tău vrea să trăiască</div>
+    <div class="intro-line2">La 20 de minute după ultima țigară, inima ta începe deja să se vindece. Corpul tău e de partea ta.</div>
+  </div>
+  <div class="intro-scene" id="scene-2">
+    <div class="intro-emoji">🌅</div>
+    <div class="intro-line1">Fiecare dimineață e un nou început</div>
+    <div class="intro-line2">Nu e vorba de a renunța la ceva. E vorba de a câștiga timp — petrecut cu cei dragi.</div>
+  </div>
+  <div class="intro-scene" id="scene-3">
+    <div class="intro-emoji">💚</div>
+    <div class="intro-line1">Tu poți face asta</div>
+    <div class="intro-line2">Milioane de oameni au reușit. Tu ai un motiv. Și acum ai și un aliat.</div>
+  </div>
+  <div class="intro-scene" id="scene-4">
+    <div class="intro-emoji">🌿</div>
+    <div class="intro-line1">FărăFum</div>
+    <div class="intro-line2">Călătoria ta spre libertate începe acum.</div>
+  </div>
+  <div class="intro-dots">
+    <div class="intro-dot active" id="dot-0"></div>
+    <div class="intro-dot" id="dot-1"></div>
+    <div class="intro-dot" id="dot-2"></div>
+    <div class="intro-dot" id="dot-3"></div>
+    <div class="intro-dot" id="dot-4"></div>
+  </div>
+  <button class="intro-skip" onclick="skipIntro()">Sari peste</button>
 </div>
 
-<!-- SETUP -->
-<div id="screen-setup" class="screen">
-  <div style="padding:3rem 1.5rem 2rem;display:flex;flex-direction:column;align-items:center;width:100%">
-    <div class="setup-logo">🚭 FĂRĂFUM</div>
-    <div class="setup-sub">INIȚIALIZARE PROFIL</div>
-    <div class="fcard" style="width:100%;margin-bottom:1rem">
-      <div class="slabel">Ultima țigară</div>
-      <input type="datetime-local" class="finput" id="quit-date">
-    </div>
-    <div class="fcard" style="width:100%;margin-bottom:1rem">
-      <div class="srow">
-        <div><div class="slabel">Țigări / zi</div><input type="number" class="finput" id="cigs-day" value="20" min="1"></div>
-        <div><div class="slabel">Preț pachet</div><input type="number" class="finput" id="pack-price" value="35" min="1"></div>
-      </div>
-    </div>
-    <div class="fcard" style="width:100%;margin-bottom:1.5rem">
-      <div class="slabel">Numele tău</div>
-      <input type="text" class="finput" id="user-name" placeholder="ex: Andrei">
-    </div>
-    <button class="nbtn-neon primary" onclick="saveSetup()">ACTIVEAZĂ MISIUNEA 🚀</button>
-  </div>
-</div>
+<div id="app">
+  <div id="screens">
 
-<!-- MAIN -->
-<div id="screen-main" class="screen">
-  <div class="app-header">
-    <div class="app-logo">🚭 FĂRĂFUM</div>
-    <div class="app-sub" id="header-sub">SISTEM ACTIV • MONITORIZARE ÎN CURS</div>
-  </div>
-  <div class="timer-section">
-    <div class="timer-ring">
-      <svg width="190" height="190" viewBox="0 0 190 190">
-        <circle cx="95" cy="95" r="85" fill="none" stroke="rgba(0,245,255,0.08)" stroke-width="8"/>
-        <circle cx="95" cy="95" r="85" fill="none" stroke="url(#ringGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="534" id="ring-prog" stroke-dashoffset="534"/>
-        <defs><linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#7b2fff"/><stop offset="100%" stop-color="#00f5ff"/></linearGradient></defs>
-      </svg>
-      <div class="timer-ring-text">
-        <div class="tdays" id="days-c">0</div>
-        <div class="tlbl">ZILE LIBERE</div>
+    <div class="screen" id="screen-setup">
+      <div class="setup-title">🌿 FărăFum</div>
+      <div class="setup-sub">Primul pas spre libertate. Hai să personalizăm călătoria ta.</div>
+      <div class="field"><label>Numele tău</label><input type="text" id="s-name" placeholder="ex: Andrei" /></div>
+      <div class="field"><label>Data la care ai renunțat</label><input type="date" id="s-date" /></div>
+      <div class="field"><label>Țigări pe zi (înainte)</label><input type="number" id="s-cigs" placeholder="ex: 15" min="1" /></div>
+      <div class="field"><label>Prețul unui pachet (RON)</label><input type="number" id="s-price" placeholder="ex: 25" min="1" step="0.5" /></div>
+      <div class="field">
+        <label>Motivul principal</label>
+        <select id="s-reason">
+          <option value="familie">👨‍👩‍👧 Familie</option>
+          <option value="sanatate">❤️ Sănătate</option>
+          <option value="bani">💰 Bani</option>
+          <option value="sport">🏃 Sport</option>
+          <option value="altul">✨ Altul</option>
+        </select>
       </div>
+      <button class="btn-primary" onclick="saveSetup()">Încep călătoria →</button>
     </div>
-    <div class="timer-hms">
-      <div class="tunit"><div class="tnum" id="hrs-c">00</div><div class="thms">ORE</div></div>
-      <div class="tunit"><div class="tnum" id="min-c">00</div><div class="thms">MIN</div></div>
-      <div class="tunit"><div class="tnum" id="sec-c">00</div><div class="thms">SEC</div></div>
-    </div>
-  </div>
-  <div class="sgrid">
-    <div class="scard2"><div class="sicon">🚬</div><div class="sval" id="cigs-av">0</div><div class="slab">ȚIGĂRI EVITATE</div></div>
-    <div class="scard2"><div class="sicon">💰</div><div class="sval" id="money-s">0</div><div class="slab">RON ECONOMISIȚI</div></div>
-    <div class="scard2"><div class="sicon">⏳</div><div class="sval" id="life-g">0</div><div class="slab">VIAȚĂ CÂȘTIGATĂ</div></div>
-    <div class="scard2"><div class="sicon">🔥</div><div class="sval" id="streak-d">0</div><div class="slab">ZILE LA RÂND</div></div>
-  </div>
-  <div class="lsec">
-    <div class="sectitle">🫁 STATUS PULMONAR</div>
-    <div class="lcard">
-      <div class="lwrap">
-        <svg width="90" height="100" viewBox="0 0 90 100" style="flex-shrink:0">
-          <defs>
-            <radialGradient id="lg-left" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#5a1a1a" id="lg-left-c1"/><stop offset="100%" stop-color="#2a0a0a" id="lg-left-c2"/></radialGradient>
-            <radialGradient id="lg-right" cx="60%" cy="40%" r="60%"><stop offset="0%" stop-color="#5a1a1a" id="lg-right-c1"/><stop offset="100%" stop-color="#2a0a0a" id="lg-right-c2"/></radialGradient>
-            <radialGradient id="lg-health" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00f5ff" stop-opacity="0" id="lgh1"/><stop offset="100%" stop-color="#7b2fff" stop-opacity="0" id="lgh2"/></radialGradient>
-          </defs>
-          <rect x="41" y="2" width="8" height="16" rx="4" fill="#444"/><rect x="43" y="2" width="4" height="16" rx="2" fill="#666" opacity="0.4"/>
-          <path d="M41 16 Q30 20 24 28" fill="none" stroke="#444" stroke-width="3.5" stroke-linecap="round"/>
-          <path d="M49 16 Q60 20 66 28" fill="none" stroke="#444" stroke-width="3.5" stroke-linecap="round"/>
-          <path id="ll" d="M38 18 C32 18 18 26 13 38 C8 52 9 68 14 78 C18 85 25 87 30 83 C34 80 35 72 35 62 L35 28 C35 22 36 18 38 18Z" fill="url(#lg-left)" stroke="#333" stroke-width="1"/>
-          <path d="M35 28 C30 30 22 36 18 44" fill="none" stroke="#333" stroke-width="0.8" opacity="0.6"/>
-          <path d="M14 58 C18 56 26 56 32 60" fill="none" stroke="#333" stroke-width="0.8" opacity="0.6"/>
-          <path d="M24 35 C22 42 20 52 18 62" fill="none" stroke="#444" stroke-width="0.6" opacity="0.5"/>
-          <path d="M28 38 C26 46 25 56 24 68" fill="none" stroke="#444" stroke-width="0.6" opacity="0.5"/>
-          <path id="lr" d="M52 18 C58 18 72 26 77 38 C82 52 81 68 76 78 C72 85 65 87 60 83 C56 80 55 72 55 62 L55 28 C55 22 54 18 52 18Z" fill="url(#lg-right)" stroke="#333" stroke-width="1"/>
-          <path d="M55 28 C60 30 68 36 72 44" fill="none" stroke="#333" stroke-width="0.8" opacity="0.6"/>
-          <path d="M76 58 C72 56 64 56 58 60" fill="none" stroke="#333" stroke-width="0.8" opacity="0.6"/>
-          <path d="M66 35 C68 42 70 52 72 62" fill="none" stroke="#444" stroke-width="0.6" opacity="0.5"/>
-          <path id="llh" d="M38 18 C32 18 18 26 13 38 C8 52 9 68 14 78 C18 85 25 87 30 83 C34 80 35 72 35 62 L35 28 C35 22 36 18 38 18Z" fill="url(#lg-health)" opacity="0"/>
-          <path id="lrh" d="M52 18 C58 18 72 26 77 38 C82 52 81 68 76 78 C72 85 65 87 60 83 C56 80 55 72 55 62 L55 28 C55 22 54 18 52 18Z" fill="url(#lg-health)" opacity="0"/>
+
+    <div class="screen" id="screen-home">
+      <div class="home-header">
+        <div>
+          <div class="home-greeting">Bună ziua,</div>
+          <div class="home-name" id="h-name">—</div>
+        </div>
+        <div class="streak-badge">🔥 <span id="h-streak">0</span> zile</div>
+      </div>
+      <div class="daily-msg" id="h-daily-msg">„Fiecare zi fără fum este o victorie pentru familia ta."</div>
+      <div class="timer-ring">
+        <svg viewBox="0 0 180 180" width="180" height="180">
+          <circle class="track" cx="90" cy="90" r="82"/>
+          <circle class="prog" id="ring-prog" cx="90" cy="90" r="82" stroke-dasharray="515" stroke-dashoffset="515"/>
         </svg>
-        <div class="linfo">
-          <div class="lpct" id="lpct">0%</div>
-          <div class="lstatus" id="lstatus">Procesul de recuperare a început...</div>
-          <div class="lbarbg"><div class="lbarfill" id="lbar" style="width:0%"></div></div>
+        <div class="timer-center">
+          <div class="timer-val" id="h-timer">00:00:00</div>
+          <div class="timer-label">fără fum</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-val" id="h-money">0</div>
+          <div class="stat-label">RON economisiți</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="h-cigs">0</div>
+          <div class="stat-label">Țigări evitate</div>
+        </div>
+      </div>
+      <div class="section-title">🎯 Misiunea de azi</div>
+      <div class="mission-card">
+        <div class="mission-icon" id="m-icon">🌬️</div>
+        <div>
+          <div class="mission-text" id="m-text">Respiră adânc de 10 ori când simți nevoia de o țigară.</div>
+          <div class="mission-done">Apasă dacă ai reușit ✓</div>
+        </div>
+      </div>
+      <div class="section-title">🫁 Plămânii tăi</div>
+      <div class="lungs-wrap">
+        <div style="position:relative;width:220px;height:200px;margin:0 auto">
+          <svg id="lungs-svg" viewBox="0 0 220 200" width="220" height="200" style="position:absolute;top:0;left:0">
+            <defs>
+              <radialGradient id="lgL" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#4ade80" stop-opacity="0.95"/><stop offset="100%" stop-color="#166534" stop-opacity="0.4"/></radialGradient>
+              <radialGradient id="lgR" cx="60%" cy="40%" r="60%"><stop offset="0%" stop-color="#4ade80" stop-opacity="0.95"/><stop offset="100%" stop-color="#166534" stop-opacity="0.4"/></radialGradient>
+              <radialGradient id="lgLd" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#4b1212" stop-opacity="0.9"/><stop offset="100%" stop-color="#1c0a0a" stop-opacity="0.6"/></radialGradient>
+              <radialGradient id="lgRd" cx="60%" cy="40%" r="60%"><stop offset="0%" stop-color="#4b1212" stop-opacity="0.9"/><stop offset="100%" stop-color="#1c0a0a" stop-opacity="0.6"/></radialGradient>
+              <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <path d="M110 6 Q110 32 110 50" stroke="#4ade80" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.85"/>
+            <path d="M110 50 Q86 54 70 70" stroke="#4ade80" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.75"/>
+            <path d="M110 50 Q134 54 150 70" stroke="#4ade80" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.75"/>
+            <path id="ll-dark" d="M70 70 Q44 72 34 92 Q20 115 23 142 Q26 168 46 180 Q62 189 77 183 Q91 175 93 158 Q97 134 88 108 Q81 87 70 70Z" fill="url(#lgLd)" opacity="1"/>
+            <path id="ll-fill" d="M70 70 Q44 72 34 92 Q20 115 23 142 Q26 168 46 180 Q62 189 77 183 Q91 175 93 158 Q97 134 88 108 Q81 87 70 70Z" fill="url(#lgL)" opacity="0" filter="url(#glow)"/>
+            <path d="M70 70 Q44 72 34 92 Q20 115 23 142 Q26 168 46 180 Q62 189 77 183 Q91 175 93 158 Q97 134 88 108 Q81 87 70 70Z" fill="none" stroke="#4ade80" stroke-width="1.2" opacity="0.25"/>
+            <path d="M70 70 Q67 96 58 112" stroke="#4ade80" stroke-width="2" fill="none" opacity="0.35" stroke-linecap="round"/>
+            <path d="M70 70 Q79 96 75 120" stroke="#4ade80" stroke-width="1.5" fill="none" opacity="0.25" stroke-linecap="round"/>
+            <path d="M58 112 Q50 128 46 148" stroke="#4ade80" stroke-width="1.3" fill="none" opacity="0.2" stroke-linecap="round"/>
+            <path d="M58 112 Q63 130 58 150" stroke="#4ade80" stroke-width="1" fill="none" opacity="0.15" stroke-linecap="round"/>
+            <path d="M46 148 Q42 158 44 168" stroke="#4ade80" stroke-width="1" fill="none" opacity="0.12" stroke-linecap="round"/>
+            <path id="lr-dark" d="M150 70 Q176 72 186 92 Q200 115 197 142 Q194 168 174 180 Q158 189 143 183 Q129 175 127 158 Q123 134 132 108 Q139 87 150 70Z" fill="url(#lgRd)" opacity="1"/>
+            <path id="lr-fill" d="M150 70 Q176 72 186 92 Q200 115 197 142 Q194 168 174 180 Q158 189 143 183 Q129 175 127 158 Q123 134 132 108 Q139 87 150 70Z" fill="url(#lgR)" opacity="0" filter="url(#glow)"/>
+            <path d="M150 70 Q176 72 186 92 Q200 115 197 142 Q194 168 174 180 Q158 189 143 183 Q129 175 127 158 Q123 134 132 108 Q139 87 150 70Z" fill="none" stroke="#4ade80" stroke-width="1.2" opacity="0.25"/>
+            <path d="M150 70 Q153 96 162 112" stroke="#4ade80" stroke-width="2" fill="none" opacity="0.35" stroke-linecap="round"/>
+            <path d="M150 70 Q141 96 145 120" stroke="#4ade80" stroke-width="1.5" fill="none" opacity="0.25" stroke-linecap="round"/>
+            <path d="M162 112 Q170 128 174 148" stroke="#4ade80" stroke-width="1.3" fill="none" opacity="0.2" stroke-linecap="round"/>
+            <path d="M162 112 Q157 130 162 150" stroke="#4ade80" stroke-width="1" fill="none" opacity="0.15" stroke-linecap="round"/>
+            <path d="M174 148 Q178 158 176 168" stroke="#4ade80" stroke-width="1" fill="none" opacity="0.12" stroke-linecap="round"/>
+          </svg>
+          <div id="lung-label" style="position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:.72rem;color:var(--text3);white-space:nowrap;text-align:center"></div>
+        </div>
+      </div>
+      <div style="height:1.5rem"></div>
+      <div class="section-title">🏅 Badge-uri</div>
+      <div class="badges-row" id="h-badges"></div>
+      <br>
+      <button class="craving-btn" onclick="openSOS()">🆘 Am o poftă — Ajutor SOS</button>
+      <button class="relapse-btn" onclick="logRelapse()">Am fumat... (recădere)</button>
+    </div>
+
+    <div class="screen" id="screen-stats">
+      <div class="page-title">📊 Statistici</div>
+      <div class="stats-big-card">
+        <div class="sbig-val" id="st-money">0 RON</div>
+        <div class="sbig-label">Bani economisiți total</div>
+        <div class="sbig-sub">Echivalentul a <span id="st-coffee">0</span> cafele ☕</div>
+      </div>
+      <div class="stats-big-card">
+        <div class="sbig-val" id="st-cigs">0</div>
+        <div class="sbig-label">Țigări evitate</div>
+        <div class="sbig-sub"><span id="st-days">0</span> zile × <span id="st-cpd">0</span> țigări/zi</div>
+      </div>
+      <div class="stats-big-card">
+        <div class="sbig-val" id="st-cravings">0</div>
+        <div class="sbig-label">Craving-uri depășite</div>
+        <div class="sbig-sub">Fiecare rezistență = o victorie</div>
+      </div>
+      <div class="section-title" style="margin-top:1rem">🗓️ Jaloane atinse</div>
+      <div class="timeline" id="st-timeline"></div>
+    </div>
+
+    <div class="screen" id="screen-health">
+      <div class="page-title">❤️ Sănătate</div>
+      <div class="health-grid" id="health-grid"></div>
+    </div>
+
+    <div class="screen" id="screen-journal">
+      <div class="page-title">📓 Jurnal</div>
+      <div class="journal-add">
+        <div class="journal-row">
+          <select id="j-trigger">
+            <option value="stres">Stres</option>
+            <option value="plictiseala">Plictiseală</option>
+            <option value="cafea">Cafea</option>
+            <option value="social">Social</option>
+            <option value="altul">Altul</option>
+          </select>
+          <select id="j-intensity">
+            <option value="1">🟢 Ușor</option>
+            <option value="2">🟡 Mediu</option>
+            <option value="3">🔴 Puternic</option>
+          </select>
+        </div>
+        <textarea id="j-note" rows="2" placeholder="Ce simți? Cum l-ai depășit?"></textarea>
+        <button class="btn-sm" onclick="addJournalEntry()">Adaugă notă ✓</button>
+      </div>
+      <div id="journal-list"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="screen" id="screen-calendar">
+      <div class="page-title">📅 Calendar</div>
+      <div id="cal-month-nav" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <button onclick="calPrev()" style="background:var(--card);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:.4rem .8rem;cursor:pointer;font-size:1rem">‹</button>
+        <div style="font-size:.95rem;color:var(--text);font-weight:500" id="cal-month-label">—</div>
+        <button onclick="calNext()" style="background:var(--card);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:.4rem .8rem;cursor:pointer;font-size:1rem">›</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:.5rem">
+        <div class="cal-dow">L</div><div class="cal-dow">M</div><div class="cal-dow">M</div><div class="cal-dow">J</div><div class="cal-dow">V</div><div class="cal-dow">S</div><div class="cal-dow">D</div>
+      </div>
+      <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px"></div>
+      <div style="display:flex;gap:1rem;margin-top:1rem;justify-content:center">
+        <div style="display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--text3)"><div style="width:12px;height:12px;border-radius:3px;background:var(--green);opacity:.8"></div>Fără fum</div>
+        <div style="display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--text3)"><div style="width:12px;height:12px;border-radius:3px;background:var(--red);opacity:.6"></div>Recădere</div>
+        <div style="display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--text3)"><div style="width:12px;height:12px;border-radius:3px;background:var(--border)"></div>Viitor</div>
+      </div>
+      <!-- RECOMPENSE -->
+      <div style="margin-top:1.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
+          <div class="section-title" style="margin:0">🎁 Recompensa mea</div>
+          <button onclick="openReward()" class="btn-sm">+ Setează</button>
+        </div>
+        <div id="reward-display"></div>
+      </div>
+    </div>
+
+    <!-- GRADINA -->
+    <div class="screen" id="screen-garden">
+      <div class="page-title">🌱 Grădina mea</div>
+      <div style="font-size:.82rem;color:var(--text3);margin-bottom:1rem;line-height:1.5">Fiecare piatră de hotar deblochează o plantă nouă. Grădina ta crește cu tine. 🌿</div>
+      <div id="garden-container" style="position:relative;background:linear-gradient(180deg,rgba(74,222,128,.04) 0%,rgba(74,222,128,.08) 100%);border:1px solid var(--border);border-radius:16px;padding:1.2rem;min-height:280px;overflow:hidden">
+        <div id="garden-sky" style="position:absolute;top:0;left:0;right:0;height:60px;background:linear-gradient(180deg,rgba(74,222,128,.05),transparent);border-radius:16px 16px 0 0"></div>
+        <div id="garden-ground" style="position:absolute;bottom:0;left:0;right:0;height:30px;background:rgba(74,222,128,.12);border-radius:0 0 16px 16px"></div>
+        <div id="garden-plants" style="position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:.5rem;padding-bottom:2rem;min-height:240px;align-items:flex-end"></div>
+      </div>
+      <div style="margin-top:1.2rem">
+        <div class="section-title">🌸 Plante deblocate</div>
+        <div id="garden-milestones"></div>
+      </div>
+      <!-- SCRISOARE DIN VIITOR -->
+      <div style="margin-top:1.5rem;background:rgba(244,200,66,.06);border:1px solid rgba(244,200,66,.2);border-radius:14px;padding:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:.9rem;color:var(--gold);font-weight:500">✉️ Scrisoarea din viitor</div>
+            <div style="font-size:.75rem;color:var(--text3);margin-top:.2rem" id="letter-status">Se deblochează după 365 de zile</div>
+          </div>
+          <button id="letter-btn" onclick="openLetter()" class="btn-sm" style="border-color:rgba(244,200,66,.3);color:var(--gold)">Scrie →</button>
         </div>
       </div>
     </div>
-  </div>
-  <div class="bsec">
-    <div class="sectitle">🏆 REALIZĂRI</div>
-    <div class="bscroll" id="badge-list"></div>
-  </div>
-  <div class="pbanner" onclick="goTab('premium')">
-    <div><div class="pbtext">👑 PREMIUM — 7 ZILE GRATUIT</div><div class="pbsub">Statistici, reminder-e, teme vizuale</div></div>
-    <button class="pbbtn">ACTIVEAZĂ</button>
-  </div>
-  <div class="msec">
-    <div class="sectitle">💬 MESAJ ZILNIC</div>
-    <div class="mcard">
-      <div class="mtext" id="motiv">"Fiecare oră fără fumat este un cadou pentru cei care te iubesc."</div>
-      <button class="mrefresh" onclick="newMotiv()">REÎMPROSPĂTEAZĂ ↺</button>
-    </div>
-  </div>
-  <div class="bnav">
-    <button class="nbtn active" id="nh" onclick="goTab('main')"><span class="nicon">🏠</span>ACASĂ</button>
-    <button class="nbtn" id="ns" onclick="goTab('stats')"><span class="nicon">📊</span>STATS</button>
-    <button class="nbtn" onclick="goTab('remind')"><span class="nicon">🔔</span>ALERTE</button>
-    <button class="nbtn" onclick="goTab('premium')"><span class="nicon">👑</span>PRO</button>
-  </div>
-</div>
 
-<!-- STATS -->
-<div id="screen-stats" class="screen">
-  <div class="screen-title"><h2>📊 STATISTICI</h2><p id="stats-sub">RAPORT COMPLET</p></div>
-  <div class="statsec"><div class="stlbl">Rezumat</div>
-    <div class="sumgrid">
-      <div class="sumcard"><div class="sumval" id="st-days">0</div><div class="sumlbl">Zile fără fumat</div></div>
-      <div class="sumcard"><div class="sumval" id="st-hrs">0</div><div class="sumlbl">Ore totale</div></div>
-      <div class="sumcard"><div class="sumval" id="st-cigs">0</div><div class="sumlbl">Țigări evitate</div></div>
-      <div class="sumcard"><div class="sumval" id="st-life">0</div><div class="sumlbl">Ore viață câștigate</div></div>
-    </div>
-  </div>
-  <div class="statsec"><div class="stlbl">Bani economisiți</div>
-    <div class="mnycard">
-      <div class="mrow"><span class="mperiod">Azi</span><span class="mamt" id="m-today">0.00 RON</span></div>
-      <div class="mrow"><span class="mperiod">Această săptămână</span><span class="mamt" id="m-week">0.00 RON</span></div>
-      <div class="mrow"><span class="mperiod">Această lună</span><span class="mamt" id="m-month">0.00 RON</span></div>
-      <div class="mrow"><span class="mperiod">Total</span><span class="mamt" id="m-total">0.00 RON</span></div>
-    </div>
-  </div>
-  <div class="statsec"><div class="stlbl">Echivalente</div><div class="eqcard" id="eq-list"></div></div>
-  <div class="statsec"><div class="stlbl">Progres săptămânal</div>
-    <div class="chartcard"><div class="chartbars" id="chart-bars"></div><div style="display:flex;gap:4px" id="chart-lbls"></div></div>
-  </div>
-  <div class="statsec"><div class="stlbl">Recuperarea corpului</div><div class="tlcard" id="tl-list"></div></div>
-  <div class="statsec"><div class="stlbl">Recorduri</div>
-    <div class="reccard">
-      <div class="recrow"><span class="reclbl">🏆 Cea mai lungă serie</span><span class="recval" id="rec-s">0 zile</span></div>
-      <div class="recrow"><span class="reclbl">🚬 Țigări evitate/zi</span><span class="recval" id="rec-c">0</span></div>
-      <div class="recrow"><span class="reclbl">💰 Economii/zi</span><span class="recval" id="rec-m">0 RON</span></div>
-      <div class="recrow"><span class="reclbl">🥇 Primul badge</span><span class="recval" id="rec-b">—</span></div>
-    </div>
-  </div>
-  <div class="statsec"><div class="stlbl">Comparații</div>
-    <div class="cmpcard">
-      <div class="cmprow"><span class="cmplbl">Tu</span><div class="cmpbarbg"><div class="cmpbarfill" style="width:70%;background:linear-gradient(90deg,#7b2fff,#00f5ff)"></div></div><span class="cmpval" id="cmp-you">—</span></div>
-      <div class="cmprow"><span class="cmplbl">Media RO</span><div class="cmpbarbg"><div class="cmpbarfill" style="width:30%;background:#ff2d78"></div></div><span class="cmpval">~8 zile</span></div>
-      <div class="cmprow"><span class="cmplbl">Top 10%</span><div class="cmpbarbg"><div class="cmpbarfill" style="width:100%;background:#FFD700"></div></div><span class="cmpval">90+ zile</span></div>
-      <div class="cmplck" onclick="goTab('premium')"><div style="font-size:32px">🔒</div><div style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--neon);margin-top:8px">PREMIUM</div></div>
-    </div>
-  </div>
-  <div class="bnav">
-    <button class="nbtn" onclick="goTab('main')"><span class="nicon">🏠</span>ACASĂ</button>
-    <button class="nbtn active" onclick="goTab('stats')"><span class="nicon">📊</span>STATS</button>
-    <button class="nbtn" onclick="goTab('remind')"><span class="nicon">🔔</span>ALERTE</button>
-    <button class="nbtn" onclick="goTab('premium')"><span class="nicon">👑</span>PRO</button>
-  </div>
-</div>
+    <div class="screen" id="screen-settings">
+      <div class="page-title">⚙️ Setări</div>
 
-<!-- REMIND -->
-<div id="screen-remind" class="screen">
-  <div class="screen-title"><h2>🔔 ALERTE</h2><p>CONFIGURARE NOTIFICĂRI</p></div>
-  <div style="margin:0 1.5rem 1.25rem;background:linear-gradient(135deg,rgba(0,245,255,.08),rgba(123,47,255,.08));border:1px solid var(--neon);border-radius:16px;padding:1.25rem;text-align:center">
-    <div style="font-family:'Orbitron',sans-serif;font-size:14px;color:var(--neon);margin-bottom:.5rem">✓ PRO ACTIV — MOD TESTARE</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.5">Toate alertele sunt deblocate pentru testare</div>
-  </div>
-  <div style="padding:0 1.5rem;display:flex;flex-direction:column;gap:10px">
-    <div class="fcard">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div><div style="font-size:14px;font-weight:700">📅 Mesaj zilnic</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:2px">Un mesaj motivațional în fiecare zi</div></div>
-        <div style="color:var(--neon);font-size:16px">✓</div>
+      <!-- BANNER PREMIUM -->
+      <div id="premium-banner" onclick="openPremium()" style="background:linear-gradient(135deg,rgba(244,200,66,.15),rgba(244,200,66,.05));border:1px solid rgba(244,200,66,.35);border-radius:14px;padding:1rem 1.1rem;margin-bottom:1.2rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:.85rem;color:var(--gold);font-weight:600">✨ FărăFum Premium</div>
+          <div id="premium-banner-sub" style="font-size:.72rem;color:var(--text3);margin-top:.2rem">Trial 3 zile gratuit · 10 RON/lună</div>
+        </div>
+        <div style="font-size:.8rem;color:var(--gold);font-weight:500">Vezi →</div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="font-size:12px;color:rgba(0,245,255,.4);letter-spacing:1px">ORA</div>
-        <input type="time" value="08:00" class="finput" style="flex:1">
-      </div>
-    </div>
-    <div class="fcard">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div><div style="font-size:14px;font-weight:700">⚠️ Ore de risc</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:2px">Când aveai obiceiul să fumezi</div></div>
-        <div style="color:var(--neon);font-size:16px">✓</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:rgba(0,245,255,.4);width:80px;letter-spacing:.5px">DIMINEAȚA</span><input type="time" value="07:30" class="finput" style="flex:1"></div>
-        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:rgba(0,245,255,.4);width:80px;letter-spacing:.5px">PAUZA</span><input type="time" value="10:30" class="finput" style="flex:1"></div>
-        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:rgba(0,245,255,.4);width:80px;letter-spacing:.5px">PRÂNZ</span><input type="time" value="13:00" class="finput" style="flex:1"></div>
-        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:rgba(0,245,255,.4);width:80px;letter-spacing:.5px">SEARA</span><input type="time" value="21:00" class="finput" style="flex:1"></div>
-      </div>
-    </div>
-    <div class="fcard">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div><div style="font-size:14px;font-weight:700">⏱️ La fiecare X ore</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:2px">Încurajare periodică</div></div>
-        <div style="color:var(--neon);font-size:16px">✓</div>
-      </div>
-      <div style="display:flex;gap:8px" id="freq-btns">
-        <div onclick="selectFreq(this,'2h')" style="background:rgba(0,245,255,.12);border:1px solid var(--neon);border-radius:50px;padding:6px 14px;font-size:13px;color:var(--neon);cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px">2H</div>
-        <div onclick="selectFreq(this,'4h')" style="background:transparent;border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.3);cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px">4H</div>
-        <div onclick="selectFreq(this,'6h')" style="background:transparent;border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.3);cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px">6H</div>
-        <div onclick="selectFreq(this,'8h')" style="background:transparent;border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.3);cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px">8H</div>
-      </div>
-    </div>
-    <div class="fcard">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div><div style="font-size:14px;font-weight:700">📊 Raport săptămânal</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:2px">Rezumatul progresului tău</div></div>
-        <div style="color:var(--neon);font-size:16px">✓</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="font-size:12px;color:rgba(0,245,255,.4);letter-spacing:1px">ZIUA</div>
-        <select class="finput" style="flex:1">
-          <option>Duminică</option><option>Luni</option><option>Vineri</option>
-        </select>
-      </div>
-    </div>
-  </div>
-  <div class="bnav">
-    <button class="nbtn" onclick="goTab('main')"><span class="nicon">🏠</span>ACASĂ</button>
-    <button class="nbtn" onclick="goTab('stats')"><span class="nicon">📊</span>STATS</button>
-    <button class="nbtn active"><span class="nicon">🔔</span>ALERTE</button>
-    <button class="nbtn" onclick="goTab('premium')"><span class="nicon">👑</span>PRO</button>
-  </div>
-</div>
 
-<!-- PREMIUM -->
-<div id="screen-premium" class="screen">
-  <div class="screen-title"><h2>👑 PREMIUM</h2><p>DEBLOCHEAZĂ EXPERIENȚA COMPLETĂ</p></div>
-  <div style="margin:0 1.5rem 1.25rem;background:linear-gradient(135deg,rgba(0,245,255,.1),rgba(123,47,255,.1));border:1px solid var(--neon);border-radius:16px;padding:1.25rem;text-align:center;position:relative;overflow:hidden">
-    <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent)"></div>
-    <div style="font-size:12px;color:rgba(0,245,255,.5);letter-spacing:2px;margin-bottom:4px">STATUS ABONAMENT</div>
-    <div style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--neon);text-shadow:0 0 15px var(--neon)">✓ PRO ACTIV</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:4px">Mod testare — toate funcțiile deblocate</div>
-  </div>
-  <div style="padding:0 1.5rem 1.25rem">
-    <div class="stlbl">Alege planul</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div id="plan-monthly" onclick="selectPlan('monthly')" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;text-align:center;cursor:pointer">
-        <div style="font-size:11px;color:rgba(0,245,255,.4);letter-spacing:1px;margin-bottom:.5rem">LUNAR</div>
-        <div style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:#fff">4.99</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.3)">RON/lună</div>
+      <div class="settings-section">
+        <div class="section-title">Profilul meu</div>
+        <div class="settings-row"><span class="sr-label">Nume</span><span class="sr-val" id="set-name">—</span></div>
+        <div class="settings-row"><span class="sr-label">Data renunțării</span><span class="sr-val" id="set-date">—</span></div>
+        <div class="settings-row"><span class="sr-label">Țigări/zi</span><span class="sr-val" id="set-cigs">—</span></div>
+        <div class="settings-row"><span class="sr-label">Preț pachet</span><span class="sr-val" id="set-price">—</span></div>
+        <div class="settings-row"><span class="sr-label">Motiv</span><span class="sr-val" id="set-reason">—</span></div>
       </div>
-      <div id="plan-yearly" onclick="selectPlan('yearly')" style="background:rgba(0,245,255,.06);border:2px solid var(--neon);border-radius:14px;padding:1.25rem;text-align:center;cursor:pointer">
-        <div style="font-size:11px;color:rgba(0,245,255,.6);letter-spacing:1px;margin-bottom:.5rem">ANUAL</div>
-        <div style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--neon)">49</div>
-        <div style="font-size:11px;color:rgba(0,245,255,.4)">RON/an</div>
-      </div>
-    </div>
-    <button onclick="startTrial()" style="width:100%;margin-top:12px;background:linear-gradient(135deg,var(--neon2),var(--neon3));color:#fff;border:none;padding:16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:1px">ACTIVEAZĂ TRIAL GRATUIT 7 ZILE 🚀</button>
-    <div style="font-size:11px;color:rgba(255,255,255,.2);text-align:center;margin-top:8px;letter-spacing:.5px">ANULEZI ORICÂND • FĂRĂ ANGAJAMENTE</div>
-  </div>
-  <div style="padding:0 1.5rem 1.25rem"><div class="stlbl">Beneficii</div>
-    <div class="fcard">
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)"><span style="font-size:20px">🔔</span><div><div style="font-size:14px;font-weight:700">Reminder-e complete</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Ore de risc, zilnice, periodice, săptămânale</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)"><span style="font-size:20px">📊</span><div><div style="font-size:14px;font-weight:700">Statistici avansate</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Grafice detaliate și export date</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)"><span style="font-size:20px">✏️</span><div><div style="font-size:14px;font-weight:700">Mesaje personalizate</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Cu numele copilului sau partenerului</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)"><span style="font-size:20px">🏆</span><div><div style="font-size:14px;font-weight:700">Toate badge-urile</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Acces la toate realizările deblocate</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,245,255,.06)"><span style="font-size:20px">🎨</span><div><div style="font-size:14px;font-weight:700">Teme vizuale</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Aurora, natură, apus și altele</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0"><span style="font-size:20px">🚫</span><div><div style="font-size:14px;font-weight:700">Fără reclame</div><div style="font-size:12px;color:rgba(0,245,255,.4);margin-top:1px">Experiență curată și fără întreruperi</div></div><span style="margin-left:auto;color:var(--neon);font-size:16px">✓</span></div>
-    </div>
-  </div>
-  <div style="padding:0 1.5rem 2rem"><div class="stlbl">Teme vizuale</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="themes-grid">
-      <div onclick="selectTheme('dark')" style="border-radius:14px;overflow:hidden;cursor:pointer;border:2px solid var(--neon)">
-        <div style="height:55px;background:linear-gradient(135deg,#020818,#060d24)"></div>
-        <div style="background:rgba(0,245,255,.05);padding:8px;text-align:center;font-size:12px;color:var(--neon);letter-spacing:.5px">🌑 CYBER <span style="font-size:10px">✓</span></div>
-      </div>
-      <div onclick="selectTheme('aurora')" style="border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid var(--border)">
-        <div style="height:55px;background:linear-gradient(135deg,#0d1b2a,#415a77,#778da9)"></div>
-        <div style="background:rgba(0,245,255,.03);padding:8px;text-align:center;font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.5px">🌌 AURORA</div>
-      </div>
-      <div onclick="selectTheme('nature')" style="border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid var(--border)">
-        <div style="height:55px;background:linear-gradient(135deg,#1a2e1a,#3a6b3a)"></div>
-        <div style="background:rgba(0,245,255,.03);padding:8px;text-align:center;font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.5px">🌿 NATURĂ</div>
-      </div>
-      <div onclick="selectTheme('sunset')" style="border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid var(--border)">
-        <div style="height:55px;background:linear-gradient(135deg,#2e1a0a,#cd853f)"></div>
-        <div style="background:rgba(0,245,255,.03);padding:8px;text-align:center;font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.5px">🌅 APUS</div>
-      </div>
-    </div>
-  </div>
-  <div class="bnav">
-    <button class="nbtn" onclick="goTab('main')"><span class="nicon">🏠</span>ACASĂ</button>
-    <button class="nbtn" onclick="goTab('stats')"><span class="nicon">📊</span>STATS</button>
-    <button class="nbtn" onclick="goTab('remind')"><span class="nicon">🔔</span>ALERTE</button>
-    <button class="nbtn active"><span class="nicon">👑</span>PRO</button>
-  </div>
-</div>
 
-<!-- MODAL -->
-<div id="pmodal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <h3>👑 FĂRĂFUM PRO</h3>
-    <p>7 zile gratuit, apoi 4.99 RON/lună</p>
-    <div class="mfeat"><span class="mficon">🔔</span><span class="mftext">Reminder-e complete personalizate</span></div>
-    <div class="mfeat"><span class="mficon">📊</span><span class="mftext">Statistici avansate și comparații</span></div>
-    <div class="mfeat"><span class="mficon">🏆</span><span class="mftext">Toate badge-urile deblocate</span></div>
-    <div class="mfeat"><span class="mficon">🎨</span><span class="mftext">Teme vizuale exclusive</span></div>
-    <button class="modalbtn">ACTIVEAZĂ TRIAL 7 ZILE 🚀</button>
-    <button class="modalclose" onclick="closeModal()">Nu acum</button>
+      <div class="settings-section">
+        <div class="section-title">🎨 Temă vizuală</div>
+        <div class="theme-grid">
+          <div class="theme-card active" id="theme-forest" onclick="setTheme('forest')">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0d1a12,#1a3a20)"></div>
+            <div class="theme-name">🌿 Forest</div>
+          </div>
+          <div class="theme-card" id="theme-ocean" onclick="setThemePremium('ocean')">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0a1628,#0d2d4a)"></div>
+            <div class="theme-name">🌊 Ocean ✨</div>
+          </div>
+          <div class="theme-card" id="theme-sunset" onclick="setThemePremium('sunset')">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#1a0a0a,#2d1510)"></div>
+            <div class="theme-name">🌅 Sunset ✨</div>
+          </div>
+          <div class="theme-card" id="theme-night" onclick="setThemePremium('night')">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#0a0a1a,#15152d)"></div>
+            <div class="theme-name">🌙 Night ✨</div>
+          </div>
+          <div class="theme-card" id="theme-rose" onclick="setThemePremium('rose')">
+            <div class="theme-preview" style="background:linear-gradient(135deg,#1a0a14,#2d1022)"></div>
+            <div class="theme-name">🌸 Rose ✨</div>
+          </div>
+        </div>
+        <div style="font-size:.7rem;color:var(--text3);margin-top:.5rem">✨ = disponibil în Premium</div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-row"><span class="sr-label">Editează profil</span><span class="sr-link" onclick="resetSetup()">Modifică →</span></div>
+        <div class="settings-row"><span class="sr-label">Reset complet</span><span class="sr-link" style="color:var(--red)" onclick="doRelapse('full')">Șterge tot →</span></div>
+        <div class="settings-row"><span class="sr-label">Versiune</span><span class="sr-val">1.0.0</span></div>
+        <div class="settings-row"><span class="sr-label">🌿 FărăFum</span><span class="sr-val">Cu drag, pentru tine</span></div>
+      </div>
+    </div>
+
   </div>
+
+  <nav id="nav" style="display:none">
+    <button class="nav-btn active" onclick="goTo('home',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Acasă</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('calendar',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Calendar</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('garden',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/></svg>
+      <span>Grădină</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('stats',this)">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Statistici</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('settings',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Setări</span>
+    </button>
+  </nav>
+
+  <!-- BUTON SOS FLOTANT -->
+  <button id="sos-fab" onclick="openSOS()" style="display:none;position:fixed;bottom:90px;left:16px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#f87171,#dc2626);border:none;cursor:pointer;font-size:1.1rem;font-weight:700;color:#fff;box-shadow:0 4px 20px rgba(248,113,113,0.4);z-index:100;font-family:'DM Sans',sans-serif">SOS</button>
+
+  <!-- BUTON AI FLOTANT -->
+  <button id="ai-fab" onclick="toggleAI()" style="display:none;position:fixed;bottom:90px;right:16px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--green),#22c55e);border:none;cursor:pointer;font-size:1.4rem;box-shadow:0 4px 20px rgba(74,222,128,0.35);z-index:100;transition:transform .2s">🤖</button>
+
+  <!-- PANOUL CHAT AI -->
+  <div id="ai-panel" style="display:none;position:fixed;bottom:155px;right:12px;width:300px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;z-index:200;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.4)">
+    <div style="background:linear-gradient(135deg,rgba(74,222,128,.15),rgba(34,197,94,.05));padding:.9rem 1rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:.9rem;font-weight:500;color:var(--text)">🤖 Asistent FărăFum</div>
+        <div style="font-size:.7rem;color:var(--green);margin-top:.1rem">● Online — gata să te ajut</div>
+      </div>
+      <button onclick="toggleAI()" style="background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer;padding:.2rem">✕</button>
+    </div>
+    <div id="ai-messages" style="height:220px;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.6rem">
+      <div class="ai-msg ai-msg-bot">Bună! Sunt aici să te ajut în călătoria ta fără fum. Cum te simți azi? 💚</div>
+    </div>
+    <div style="padding:.6rem;border-top:1px solid var(--border);display:flex;gap:.5rem">
+      <input id="ai-input" type="text" placeholder="Scrie un mesaj..." style="flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:.5rem .7rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none" onkeydown="if(event.key==='Enter')sendAI()"/>
+      <button onclick="sendAI()" style="background:var(--green);border:none;border-radius:8px;padding:.5rem .8rem;cursor:pointer;font-size:1rem">➤</button>
+    </div>
+    <div style="padding:.5rem .75rem;display:flex;flex-wrap:wrap;gap:.4rem;border-top:1px solid var(--border)">
+      <button class="ai-quick" onclick="quickMsg('Am o poftă puternică acum')">😣 Am o poftă</button>
+      <button class="ai-quick" onclick="quickMsg('Ce beneficii am după 1 săptămână?')">📈 Beneficii</button>
+      <button class="ai-quick" onclick="quickMsg('Motivează-mă!')">💪 Motivație</button>
+      <button class="ai-quick" onclick="quickMsg('Cum depășesc o recădere?')">🔄 Recădere</button>
+    </div>
+  </div>
+
+  <!-- MODAL SOS -->
+  <div id="sos-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;align-items:center;justify-content:center;padding:1.5rem">
+    <div style="background:var(--bg2);border:1px solid rgba(248,113,113,.3);border-radius:20px;padding:1.5rem;width:100%;max-width:340px;text-align:center">
+      <div style="font-size:2.5rem;margin-bottom:.5rem" id="sos-emoji">😮‍💨</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--text);margin-bottom:.3rem" id="sos-title">Respiră. Tu poți.</div>
+      <div style="font-size:.85rem;color:var(--text2);margin-bottom:1.2rem" id="sos-subtitle">Urmează ritmul cercului de mai jos</div>
+      <div id="breath-circle" style="width:120px;height:120px;border-radius:50%;background:rgba(74,222,128,.1);border:3px solid var(--green);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--green);font-weight:500;transition:transform 4s ease, background 4s ease">Inspiră</div>
+      <div style="font-size:1.5rem;color:var(--gold);font-family:'Playfair Display',serif;margin-bottom:.3rem" id="sos-timer">3:00</div>
+      <div style="font-size:.75rem;color:var(--text3);margin-bottom:1rem" id="sos-msg">„Această poftă trece în 3 minute. Ești mai puternic decât ea."</div>
+      <div style="display:flex;gap:.75rem">
+        <button onclick="closeSOS()" style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text3);border-radius:10px;padding:.65rem;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.85rem">Am reușit ✓</button>
+        <button onclick="closeSOS(true)" style="flex:1;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:10px;padding:.65rem;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.85rem">Închide</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SCRISOARE DIN VIITOR -->
+  <div id="letter-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:500;align-items:center;justify-content:center;padding:1.5rem">
+    <div style="background:var(--bg2);border:1px solid rgba(244,200,66,.3);border-radius:20px;padding:1.5rem;width:100%;max-width:360px">
+      <div style="font-size:1.8rem;text-align:center;margin-bottom:.5rem">✉️</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--gold);text-align:center;margin-bottom:.3rem" id="letter-title">Scrisoare către tine din viitor</div>
+      <div style="font-size:.8rem;color:var(--text3);text-align:center;margin-bottom:1rem" id="letter-sub">Se va debloca în 365 de zile. Scrie ce vrei să-ți amintești.</div>
+      <textarea id="letter-text" rows="6" placeholder="Dragul meu eu din viitor, azi am decis să renunț la fumat pentru că..." style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:.8rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;resize:none;line-height:1.6"></textarea>
+      <div style="display:flex;gap:.75rem;margin-top:.75rem">
+        <button onclick="saveLetter()" style="flex:1;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1200;font-weight:600;border:none;border-radius:10px;padding:.7rem;font-family:'DM Sans',sans-serif;cursor:pointer">Sigilează ✉️</button>
+        <button onclick="closeLetter()" style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text3);border-radius:10px;padding:.7rem;font-family:'DM Sans',sans-serif;cursor:pointer">Mai târziu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL RECOMPENSE -->
+  <div id="reward-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;align-items:center;justify-content:center;padding:1.5rem">
+    <div style="background:var(--bg2);border:1px solid rgba(244,200,66,.3);border-radius:20px;padding:1.5rem;width:100%;max-width:340px">
+      <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--gold);margin-bottom:1rem;text-align:center">🎁 Setează o recompensă</div>
+      <div class="field"><label>Numele recompensei</label><input type="text" id="rw-name" placeholder="ex: Vacanță la mare 🏖️"/></div>
+      <div class="field"><label>Suma țintă (RON)</label><input type="number" id="rw-amount" placeholder="ex: 500" min="1"/></div>
+      <div style="display:flex;gap:.75rem;margin-top:.5rem">
+        <button onclick="saveReward()" style="flex:1;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1200;font-weight:600;border:none;border-radius:10px;padding:.7rem;font-family:'DM Sans',sans-serif;cursor:pointer">Setează 🎯</button>
+        <button onclick="closeReward()" style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text3);border-radius:10px;padding:.7rem;font-family:'DM Sans',sans-serif;cursor:pointer">Anulează</button>
+      </div>
+    </div>
+  </div>  <!-- MODAL PREMIUM -->
+  <div id="premium-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:600;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto">
+    <div style="background:var(--bg2);border:1px solid rgba(244,200,66,.25);border-radius:20px;padding:1.5rem;width:100%;max-width:380px;margin:auto">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem">
+        <div>
+          <div style="font-size:1.8rem">✨</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--gold)">FărăFum Premium</div>
+          <div style="font-size:.78rem;color:var(--text3);margin-top:.2rem" id="pm-trial-label">3 zile gratuit, apoi 10 RON/lună</div>
+        </div>
+        <button onclick="closePremium()" style="background:none;border:none;color:var(--text3);font-size:1.3rem;cursor:pointer">✕</button>
+      </div>
+
+      <!-- FREE vs PREMIUM tabel -->
+      <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.2rem;font-size:.8rem">
+        <div style="display:grid;grid-template-columns:1fr 80px 80px;background:rgba(255,255,255,.05);padding:.6rem .8rem;font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">
+          <div>Funcție</div><div style="text-align:center">Free</div><div style="text-align:center;color:var(--gold)">Premium</div>
+        </div>
+        <div class="pm-row"><span>⏱️ Timer & statistici de bază</span><span class="pm-check green">✓</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>🫁 Plămâni în recuperare</span><span class="pm-check green">✓</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>🎯 Misiuni zilnice</span><span class="pm-check green">✓</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>🌱 Badge-uri (5 de bază)</span><span class="pm-check green">✓</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>📓 Jurnal craving-uri</span><span class="pm-check green">✓</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>🆘 Mod SOS craving</span><span class="pm-check red">✗</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>📅 Calendar vizual</span><span class="pm-check red">✗</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>🌱 Grădina virtuală</span><span class="pm-check red">✗</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>🏆 Toate badge-urile (21)</span><span class="pm-check red">✗</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>🎁 Sistem recompense</span><span class="pm-check red">✗</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>✉️ Scrisoarea din viitor</span><span class="pm-check red">✗</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>🎨 Teme vizuale (4 extra)</span><span class="pm-check red">✗</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row"><span>📊 Statistici avansate</span><span class="pm-check red">✗</span><span class="pm-check green">✓</span></div>
+        <div class="pm-row" style="border:none"><span>🤖 Asistent AI nelimitat</span><span class="pm-check red">✗</span><span class="pm-check green">✓</span></div>
+      </div>
+
+      <!-- Planuri pret -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
+        <div id="plan-monthly" onclick="selectPlan('monthly')" class="plan-card active-plan">
+          <div style="font-size:.72rem;color:var(--text3);margin-bottom:.3rem">LUNAR</div>
+          <div style="font-size:1.4rem;color:var(--text);font-family:'Playfair Display',serif;font-weight:700">10 RON</div>
+          <div style="font-size:.7rem;color:var(--text3)">pe lună</div>
+          <div style="font-size:.68rem;color:var(--green);margin-top:.4rem">Trial 3 zile gratuit</div>
+        </div>
+        <div id="plan-annual" onclick="selectPlan('annual')" class="plan-card">
+          <div style="font-size:.72rem;color:var(--text3);margin-bottom:.3rem">ANUAL</div>
+          <div style="font-size:1.4rem;color:var(--gold);font-family:'Playfair Display',serif;font-weight:700">79 RON</div>
+          <div style="font-size:.7rem;color:var(--text3)">pe an · <span style="color:var(--green)">-34% reducere</span></div>
+          <div style="font-size:.68rem;color:var(--text3);margin-top:.4rem">≈ 6.58 RON/lună</div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <button id="pm-cta" onclick="startTrial()" style="width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1200;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:.9rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:.6rem">
+        Încearcă 3 zile gratuit →
+      </button>
+      <div style="font-size:.7rem;color:var(--text3);text-align:center">Anulezi oricând. Fără card acum.</div>
+    </div>
+  </div>
+
 </div>
 
 <script>
-// CINEMATIC
-var cinDone=false;
-window.addEventListener('message',function(e){if(e.data==='cinDone')skipCin();});
-function skipCin(){if(cinDone)return;cinDone=true;var el=document.getElementById('cinematic');el.style.opacity='0';setTimeout(function(){el.style.display='none';startApp();},600);}
-function startCin(){}
+const MISSIONS=[
+  {icon:'🌬️',text:'Respiră adânc de 10 ori când simți nevoia de o țigară.'},
+  {icon:'🚶',text:'Ieși la o plimbare de 10 minute când simți o poftă.'},
+  {icon:'💧',text:'Bea 2L de apă azi — hidratarea reduce poftele.'},
+  {icon:'🧘',text:'5 minute de meditație dimineața pentru a-ți întări hotărârea.'},
+  {icon:'📞',text:'Sună un prieten și povestește-i despre decizia ta.'},
+  {icon:'🍎',text:'Înlocuiește o poftă cu un fruct sau o gustare sănătoasă.'},
+  {icon:'✍️',text:'Scrie un motiv pentru care ești mândru de tine azi.'},
+];
+const DAILY_MSGS=[
+  '„Fiecare zi fără fum este o victorie pentru familia ta."',
+  '„Corpul tău se vindecă în fiecare secundă. Continuă."',
+  '„Nu e vorba de a renunța la ceva. E vorba de a câștiga totul."',
+  '„Cea mai grea zi a fost prima. Tu ai trecut-o deja."',
+  '„Inspiră libertate. Expiră putere."',
+];
+const HEALTH_ITEMS=[
+  {icon:'❤️',name:'Pulsul & tensiunea',time:'20 min',hours:0.33},
+  {icon:'🩸',name:'Monoxid de carbon',time:'12 ore',hours:12},
+  {icon:'🫁',name:'Funcția pulmonară',time:'2 săptămâni',hours:336},
+  {icon:'🤸',name:'Circulația',time:'2 săptămâni',hours:336},
+  {icon:'🏃',name:'Rezistența fizică',time:'1-9 luni',hours:720},
+  {icon:'🦷',name:'Dantura',time:'1 lună',hours:720},
+  {icon:'🧠',name:'Riscul de AVC',time:'5 ani',hours:43800},
+  {icon:'🫀',name:'Riscul cardiac',time:'1 an',hours:8760},
+  {icon:'👃',name:'Mirosul & gustul',time:'48 ore',hours:48},
+  {icon:'💪',name:'Energia generală',time:'3 luni',hours:2160},
+  {icon:'😴',name:'Somnul',time:'2 săptămâni',hours:336},
+  {icon:'🧬',name:'Riscul de cancer',time:'10 ani',hours:87600},
+];
+const BADGES=[
+  // FREE
+  {icon:'🌱',name:'Prima zi',days:1,premium:false},
+  {icon:'🌿',name:'3 zile',days:3,premium:false},
+  {icon:'🌳',name:'1 săptămână',days:7,premium:false},
+  {icon:'💧',name:'Hidratat',days:5,premium:false},
+  {icon:'🚶',name:'În mișcare',days:4,premium:false},
+  // PREMIUM
+  {icon:'🏅',name:'2 săptămâni',days:14,premium:true},
+  {icon:'🌙',name:'Nopți senine',days:10,premium:true},
+  {icon:'💪',name:'Rezistent',days:21,premium:true},
+  {icon:'🥇',name:'1 lună',days:30,premium:true},
+  {icon:'🧘',name:'Zen master',days:25,premium:true},
+  {icon:'🔥',name:'Pe foc',days:33,premium:true},
+  {icon:'⭐',name:'Stea în formare',days:45,premium:true},
+  {icon:'🎯',name:'La țintă',days:50,premium:true},
+  {icon:'💎',name:'3 luni',days:90,premium:true},
+  {icon:'🌊',name:'Valul libertății',days:75,premium:true},
+  {icon:'🦋',name:'Metamorfoză',days:60,premium:true},
+  {icon:'🏆',name:'Campion',days:100,premium:true},
+  {icon:'🌟',name:'Supernova',days:150,premium:true},
+  {icon:'🎖️',name:'Veteran',days:180,premium:true},
+  {icon:'👑',name:'Regele/Regina',days:270,premium:true},
+  {icon:'🌈',name:'1 an de curcubeu',days:365,premium:true},
+];
 
-// APP DATA
-var QUOTES=["Fiecare oră fără fumat este un cadou pentru cei care te iubesc.","Copiii tăi au nevoie să te vadă sănătos la nunta lor.","Cel mai bun lucru pe care îl poți face pentru familia ta este să fii prezent.","Plămânii tăi se vindecă. Corpul tău îți mulțumește chiar acum.","Nu renunți la ceva. Câștigi totul: viață, sănătate, timp.","Fiecare zi contată este o victorie pe care nimeni nu ți-o poate lua.","Ești mai puternic decât orice dependență.","Familia ta te iubește — oferă-le mai mult timp cu tine.","Astăzi ești mai puternic decât ieri."];
-var BADGES=[{icon:"⭐",name:"PRIMA ORĂ",hours:.016,free:true},{icon:"🌅",name:"PRIMA ZI",hours:24,free:true},{icon:"🌟",name:"3 ZILE",hours:72,free:true},{icon:"🔥",name:"1 SĂPT.",hours:168,free:false},{icon:"💪",name:"2 SĂPT.",hours:336,free:false},{icon:"🥉",name:"1 LUNĂ",hours:720,free:false},{icon:"🥈",name:"3 LUNI",hours:2160,free:false},{icon:"🥇",name:"6 LUNI",hours:4320,free:false},{icon:"👑",name:"1 AN",hours:8760,free:false}];
-var TIMELINE=[{time:"20 minute",desc:"Tensiunea și pulsul revin la normal.",h:.33},{time:"8 ore",desc:"Monoxidul de carbon scade la jumătate.",h:8},{time:"24 ore",desc:"Riscul de atac de cord scade.",h:24},{time:"48 ore",desc:"Gustul și mirosul se îmbunătățesc.",h:48},{time:"72 ore",desc:"Bronhiile se relaxează.",h:72},{time:"2-12 săpt.",desc:"Circulația se îmbunătățește semnificativ.",h:336},{time:"3-9 luni",desc:"Funcția pulmonară crește cu 30%.",h:2160},{time:"1 an",desc:"Riscul bolilor coronariene s-a înjumătățit.",h:8760},{time:"10 ani",desc:"Riscul de cancer pulmonar scade cu 50%.",h:87600}];
-var EQUIV=[{icon:"☕",name:"Cafele",unit:"cafele",price:8},{icon:"🍕",name:"Pizza",unit:"pizza",price:45},{icon:"🎬",name:"Bilete cinema",unit:"bilete",price:35},{icon:"👟",name:"Adidași",unit:"perechi",price:350}];
-var ud={},timerIv;
+let data={};
+let timerInterval=null;
 
-function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById(id).classList.add('active');}
+function loadData(){try{data=JSON.parse(localStorage.getItem('farafum')||'{}')}catch(e){data={}}}
+function saveData(){localStorage.setItem('farafum',JSON.stringify(data));}
 
-function startApp(){
-  var now=new Date(),pad=function(n){return String(n).padStart(2,'0');};
-  document.getElementById('quit-date').value=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+'T'+pad(now.getHours())+':'+pad(now.getMinutes());
-  showScreen('screen-setup');
+function init(){
+  loadData();
+  applyTheme();
+  if(!data.name||!data.startDate){
+    showScreen('setup');
+    document.getElementById('s-date').value=new Date().toISOString().split('T')[0];
+  } else {
+    document.getElementById('nav').style.display='flex';
+    document.getElementById('ai-fab').style.display='flex';
+    document.getElementById('sos-fab').style.display='flex';
+    goTo('home',document.querySelector('.nav-btn'));
+    startTimer();
+  }
 }
 
-function skipCin(){
-  if(cinDone)return;
-  cinDone=true;
-  var el=document.getElementById('cinematic');
-  el.style.opacity='0';
-  setTimeout(function(){
-    el.style.display='none';
-    if(!loadSaved()) startApp();
-  },600);
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+function goTo(id,btn){
+  showScreen(id);
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(id==='home')renderHome();
+  if(id==='stats')renderStats();
+  if(id==='health')renderHealth();
+  if(id==='calendar'){if(!isPremium()){openPremium();return;}calViewYear=null;renderCalendar();}
+  if(id==='garden'){if(!isPremium()){openPremium();return;}renderGarden();}
+  if(id==='settings')renderSettings();
 }
 
 function saveSetup(){
-  var qd=document.getElementById('quit-date').value;
-  if(!qd){alert('Selectează data!');return;}
-  ud={quitDate:new Date(qd).getTime(),cpd:parseInt(document.getElementById('cigs-day').value)||20,pp:parseFloat(document.getElementById('pack-price').value)||35,name:document.getElementById('user-name').value||'tu'};
-  localStorage.setItem('farafum_user',JSON.stringify(ud));
-  document.getElementById('header-sub').textContent='FELICITĂRI, '+ud.name.toUpperCase()+'! MISIUNEA A ÎNCEPUT.';
-  showScreen('screen-main');
-  tick();timerIv=setInterval(tick,1000);
+  const name=document.getElementById('s-name').value.trim();
+  const date=document.getElementById('s-date').value;
+  const cigs=parseInt(document.getElementById('s-cigs').value)||15;
+  const price=parseFloat(document.getElementById('s-price').value)||25;
+  const reason=document.getElementById('s-reason').value;
+  if(!name||!date){alert('Te rog completează numele și data.');return;}
+  // Pastram datele existente (jurnal, craving-uri, plante, scrisoare etc.)
+  const isEdit=!!(data.name); // daca exista deja un profil = editare
+  data=Object.assign({cravings:[],journal:[]}, data, {name,startDate:date,cigsPerDay:cigs,packPrice:price,reason});
+  saveData();
+  document.getElementById('nav').style.display='flex';
+  document.getElementById('ai-fab').style.display='flex';
+  document.getElementById('sos-fab').style.display='flex';
+  goTo('home',document.querySelector('.nav-btn'));
+  startTimer();
 }
 
-function loadSaved(){
-  var saved=localStorage.getItem('farafum_user');
-  if(saved){
-    ud=JSON.parse(saved);
-    document.getElementById('header-sub').textContent='BINE AI REVENIT, '+ud.name.toUpperCase()+'!';
-    showScreen('screen-main');
-    tick();timerIv=setInterval(tick,1000);
-    return true;
+function getElapsed(){
+  const s=data.startDate;
+  if(!s)return 0;
+  // Daca e doar data (YYYY-MM-DD), o interpretam ca ora locala 00:00
+  const d=s.includes('T')?new Date(s):new Date(s+'T00:00:00');
+  return Math.max(0, Date.now()-d.getTime());
+}
+
+function formatTimer(ms){
+  const s=Math.floor(ms/1000);
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+  return [h,m,sec].map(v=>String(v).padStart(2,'0')).join(':');
+}
+
+function startTimer(){
+  if(timerInterval)clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    const ms=getElapsed();
+    const el=document.getElementById('h-timer');
+    if(el)el.textContent=formatTimer(ms);
+    updateRing(ms);updateLungs(ms);
+  },1000);
+}
+
+function updateRing(ms){
+  const c=document.getElementById('ring-prog');
+  if(!c)return;
+  const p=Math.min(ms/(1000*60*60*24*30),1);
+  c.style.strokeDashoffset=515-(515*p);
+}
+
+function updateLungs(ms){
+  const h=ms/(1000*60*60);
+  const pct=Math.min(h/720,1);
+  const ll=document.getElementById('ll-fill'),lr=document.getElementById('lr-fill');
+  const lld=document.getElementById('ll-dark'),lrd=document.getElementById('lr-dark');
+  if(ll){ll.setAttribute('opacity',pct.toFixed(3));lr.setAttribute('opacity',pct.toFixed(3));}
+  if(lld){lld.setAttribute('opacity',(1-pct*0.9).toFixed(3));lrd.setAttribute('opacity',(1-pct*0.9).toFixed(3));}
+  const label=document.getElementById('lung-label');
+  if(label){
+    if(pct>=1){label.textContent='✓ Complet recuperați';}
+    else{label.textContent=Math.round(pct*100)+'% recuperați — '+Math.round((1-pct)*720)+' ore rămase';}
   }
-  return false;
 }
 
-function elapsed(){return Math.max(0,Date.now()-ud.quitDate);}
-
-function tick(){
-  var ms=elapsed(),ts=Math.floor(ms/1000);
-  var days=Math.floor(ts/86400),hrs=Math.floor((ts%86400)/3600),mins=Math.floor((ts%3600)/60),secs=ts%60;
-  document.getElementById('days-c').textContent=days;
-  document.getElementById('hrs-c').textContent=String(hrs).padStart(2,'0');
-  document.getElementById('min-c').textContent=String(mins).padStart(2,'0');
-  document.getElementById('sec-c').textContent=String(secs).padStart(2,'0');
-  var th=ms/3600000,ca=Math.floor(th*(ud.cpd/24)),money=((ca/20)*ud.pp),lh=(ca*11/60);
-  document.getElementById('cigs-av').textContent=ca;
-  document.getElementById('money-s').textContent=money.toFixed(2);
-  document.getElementById('life-g').textContent=lh>24?(lh/24).toFixed(1)+'z':lh.toFixed(1)+'h';
-  document.getElementById('streak-d').textContent=days;
-  var p=Math.min((days%30)/30,1);
-  document.getElementById('ring-prog').setAttribute('stroke-dashoffset',534-(534*p));
-  updateLungs(th);updateBadges(th);
+function renderHome(){
+  loadData();
+  const ms=getElapsed();
+  const days=Math.floor(ms/(1000*60*60*24));
+  const hours=ms/(1000*60*60);
+  const cigsAvoided=Math.floor(hours/24*data.cigsPerDay);
+  const money=(cigsAvoided/20*data.packPrice).toFixed(1);
+  document.getElementById('h-name').textContent=data.name||'—';
+  document.getElementById('h-streak').textContent=days;
+  document.getElementById('h-money').textContent=money+' RON';
+  document.getElementById('h-cigs').textContent=cigsAvoided;
+  document.getElementById('h-daily-msg').textContent=DAILY_MSGS[days%DAILY_MSGS.length];
+  const m=MISSIONS[days%MISSIONS.length];
+  document.getElementById('m-icon').textContent=m.icon;
+  document.getElementById('m-text').textContent=m.text;
+  renderBadges(days);updateRing(ms);updateLungs(ms);
 }
 
-function updateLungs(h){
-  var p=0,s='';
-  if(h<.33){p=2;s='Oxigenul în sânge se normalizează...';}
-  else if(h<8){p=5;s='Monoxidul de carbon scade rapid.';}
-  else if(h<24){p=10;s='Riscul de atac de cord scade deja.';}
-  else if(h<48){p=18;s='Simțul gustului și mirosului revine.';}
-  else if(h<72){p=22;s='Bronhiile se relaxează.';}
-  else if(h<168){p=30;s='Circulația se îmbunătățește vizibil.';}
-  else if(h<720){p=45;s='Funcția pulmonară crește cu 30%!';}
-  else if(h<2160){p=60;s='Tusea și oboseala scad.';}
-  else if(h<4320){p=72;s='Cilii pulmonari se refac activ.';}
-  else if(h<8760){p=82;s='Riscul bolilor pulmonare s-a înjumătățit!';}
-  else{p=95;s='Plămânii aproape complet sănătoși! 🌿';}
-  document.getElementById('lpct').textContent=p+'%';
-  document.getElementById('lstatus').textContent=s;
-  document.getElementById('lbar').style.width=p+'%';
-  var r=Math.round(58+155*p/100),g=Math.round(26+149*p/100),b=Math.round(26+26*p/100);
-  var fc='rgb('+r+','+g+','+b+')';
-  var c1=document.getElementById('lg-left-c1');if(c1)c1.setAttribute('stop-color',fc);
-  var c2=document.getElementById('lg-left-c2');if(c2)c2.setAttribute('stop-color','rgb('+Math.round(r*.5)+','+Math.round(g*.5)+','+Math.round(b*.5)+')');
-  var c3=document.getElementById('lg-right-c1');if(c3)c3.setAttribute('stop-color',fc);
-  var c4=document.getElementById('lg-right-c2');if(c4)c4.setAttribute('stop-color','rgb('+Math.round(r*.5)+','+Math.round(g*.5)+','+Math.round(b*.5)+')');
-  var h1=document.getElementById('lgh1');if(h1)h1.setAttribute('stop-opacity',(p/120).toFixed(2));
-  var h2=document.getElementById('lgh2');if(h2)h2.setAttribute('stop-opacity',(p/100).toFixed(2));
-  document.getElementById('llh').setAttribute('opacity',(p/180).toFixed(2));
-  document.getElementById('lrh').setAttribute('opacity',(p/180).toFixed(2));
+function renderBadges(days){
+  document.getElementById('h-badges').innerHTML=BADGES.map(b=>`
+    <div class="badge-item">
+      <div class="badge-icon ${days>=b.days?'unlocked':'locked'}">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+    </div>`).join('');
 }
 
-var PRO_MODE=true; // TEST MODE - toate functiile pro deblocate
-
-function updateBadges(h){
-  document.getElementById('badge-list').innerHTML=BADGES.map(function(b){
-    var e=h>=b.hours||PRO_MODE;
-    return'<div class="badge'+(e?' earned':'')+'"><div class="badge-icon">'+(h>=b.hours?b.icon:PRO_MODE?b.icon:'🔒')+'</div><div class="badge-name">'+b.name+'</div></div>';
+function renderStats(){
+  loadData();
+  const ms=getElapsed();
+  const days=Math.floor(ms/(1000*60*60*24));
+  const hours=ms/(1000*60*60);
+  const cigsAvoided=Math.floor(hours/24*data.cigsPerDay);
+  const money=(cigsAvoided/20*data.packPrice).toFixed(1);
+  document.getElementById('st-money').textContent=money+' RON';
+  document.getElementById('st-coffee').textContent=Math.floor(money/7);
+  document.getElementById('st-cigs').textContent=cigsAvoided;
+  document.getElementById('st-days').textContent=days;
+  document.getElementById('st-cpd').textContent=data.cigsPerDay;
+  document.getElementById('st-cravings').textContent=(data.cravings||[]).length;
+  const milestones=[
+    {label:'Prima oră',hours:1},{label:'Prima zi',hours:24},{label:'3 zile',hours:72},
+    {label:'1 săptămână',hours:168},{label:'2 săptămâni',hours:336},{label:'1 lună',hours:720},
+    {label:'3 luni',hours:2160},{label:'6 luni',hours:4380},
+    {label:'1 an 🏆',hours:8760},{label:'2 ani 👑',hours:17520},{label:'3 ani 🌟',hours:26280},
+  ];
+  document.getElementById('st-timeline').innerHTML=milestones.map(m=>{
+    const done=hours>=m.hours;
+    return `<div class="tl-item">
+      <div class="tl-dot ${done?'done':''}">${done?'✓':'○'}</div>
+      <div class="tl-content">
+        <div class="tl-title" style="color:${done?'var(--green)':'var(--text3)'}">${m.label}</div>
+        <div class="tl-time">${m.hours<24?m.hours+'h':Math.round(m.hours/24)+'d'}</div>
+      </div></div>`;
   }).join('');
 }
 
-function goTab(tab){
-  document.querySelectorAll('.nbtn').forEach(function(b){b.classList.remove('active');});
-  if(tab==='main'){showScreen('screen-main');}
-  else if(tab==='stats'){showScreen('screen-stats');buildStats();}
-  else if(tab==='remind'){showScreen('screen-remind');}
-  else if(tab==='premium'){showScreen('screen-premium');buildPremium();}
+function renderHealth(){
+  loadData();
+  const hours=getElapsed()/(1000*60*60);
+  document.getElementById('health-grid').innerHTML=HEALTH_ITEMS.map(h=>{
+    const pct=Math.min(hours/h.hours*100,100);
+    const done=pct>=100;
+    return `<div class="health-card">
+      <div class="health-icon">${h.icon}</div>
+      <div class="health-name">${h.name}</div>
+      <div class="health-time" style="color:${done?'var(--green)':'var(--text3)'}">${done?'✓ Recuperat':h.time}</div>
+      <div class="health-bar-wrap"><div class="health-bar" style="width:${pct.toFixed(0)}%"></div></div>
+    </div>`;
+  }).join('');
 }
 
-function buildStats(){
-  var ms=elapsed(),th=ms/3600000,days=Math.floor(th/24);
-  var ca=Math.floor(th*(ud.cpd/24)),total=((ca/20)*ud.pp),lh=(ca*11/60);
-  var dpd=(ud.cpd/20)*ud.pp;
-  document.getElementById('stats-sub').textContent='RAPORT PENTRU '+ud.name.toUpperCase();
-  document.getElementById('st-days').textContent=days;
-  document.getElementById('st-hrs').textContent=Math.floor(th);
-  document.getElementById('st-cigs').textContent=ca;
-  document.getElementById('st-life').textContent=lh.toFixed(1);
-  document.getElementById('m-today').textContent=Math.min(total,dpd).toFixed(2)+' RON';
-  document.getElementById('m-week').textContent=Math.min(total,dpd*7).toFixed(2)+' RON';
-  document.getElementById('m-month').textContent=Math.min(total,dpd*30).toFixed(2)+' RON';
-  document.getElementById('m-total').textContent=total.toFixed(2)+' RON';
-  document.getElementById('cmp-you').textContent=days+' zile';
-  document.getElementById('rec-s').textContent=days+' zile';
-  document.getElementById('rec-c').textContent=ud.cpd+'/zi';
-  document.getElementById('rec-m').textContent=dpd.toFixed(2)+' RON';
-  var fb=BADGES.find(function(b){return th>=b.hours;});
-  document.getElementById('rec-b').textContent=fb?fb.name:'Niciunul încă';
-  document.getElementById('eq-list').innerHTML=EQUIV.map(function(e){var q=total/e.price,p=Math.min(q/10*100,100);return'<div class="eqitem"><div class="eqicon">'+e.icon+'</div><div class="eqtext"><div class="eqname">'+e.name+'</div><div class="eqval">'+q.toFixed(1)+' '+e.unit+'</div><div class="eqbarbg"><div class="eqbarfill" style="width:'+p+'%"></div></div></div></div>';}).join('');
-  var bars=document.getElementById('chart-bars'),lbls=document.getElementById('chart-lbls');
-  bars.innerHTML='';lbls.innerHTML='';
-  for(var i=6;i>=0;i--){var d=days-i;var v=d<=0?0:ud.cpd;var h2=Math.round((v/(ud.cpd*1.2))*74)+4;bars.innerHTML+='<div class="cbwrap"><div class="cbar" style="height:'+h2+'px"></div></div>';lbls.innerHTML+='<div style="flex:1;text-align:center;font-size:9px;color:rgba(0,245,255,.3)">'+(d<=0?'—':'Z'+d)+'</div>';}
-  document.getElementById('tl-list').innerHTML=TIMELINE.map(function(t,i){var done=th>=t.h,next=!done&&(i===0||th>=TIMELINE[i-1].h);return'<div class="tlitem"><div class="tldot '+(done?'done':next?'next':'future')+'"></div><div><div class="tltitle '+(done||next?'':'future')+'">'+(done?'✓ ':next?'→ ':'')+t.time+'</div><div class="tlsub">'+t.desc+'</div></div></div>';}).join('');
+function renderJournal(){
+  loadData();
+  const list=document.getElementById('journal-list');
+  const entries=(data.journal||[]).slice().reverse();
+  if(!entries.length){list.innerHTML='<div style="color:var(--text3);font-size:.85rem;text-align:center;padding:1rem">Nicio notă încă. Adaugă primul tău craving! 🌱</div>';return;}
+  list.innerHTML=entries.map(e=>`
+    <div class="journal-entry">
+      <div class="je-header">
+        <span class="je-trigger">🎯 ${e.trigger}</span>
+        <span class="je-intensity">${['','🟢 Ușor','🟡 Mediu','🔴 Puternic'][e.intensity]}</span>
+      </div>
+      <div class="je-note">${e.note||'—'}</div>
+      <div style="font-size:.7rem;color:var(--text3);margin-top:.3rem">${new Date(e.ts).toLocaleString('ro-RO')}</div>
+    </div>`).join('');
 }
 
-function selectFreq(el,val){
-  var btns=document.getElementById('freq-btns').children;
-  for(var i=0;i<btns.length;i++){
-    btns[i].style.background='transparent';
-    btns[i].style.borderColor='rgba(0,245,255,.15)';
-    btns[i].style.color='rgba(255,255,255,.3)';
+function addJournalEntry(){
+  loadData();
+  const trigger=document.getElementById('j-trigger').value;
+  const intensity=parseInt(document.getElementById('j-intensity').value);
+  const note=document.getElementById('j-note').value.trim();
+  if(!data.journal)data.journal=[];
+  data.journal.push({trigger,intensity,note,ts:Date.now()});
+  if(!data.cravings)data.cravings=[];
+  data.cravings.push(Date.now());
+  saveData();
+  document.getElementById('j-note').value='';
+  renderJournal();
+}
+
+function logCraving(){goTo('journal',document.querySelectorAll('.nav-btn')[3]);}
+
+function logRelapse(){
+  const today=new Date().toISOString().split('T')[0];
+  // Marcam ziua ca recadere in calendar
+  loadData();
+  if(!data.relapses)data.relapses=[];
+  if(!data.relapses.includes(today))data.relapses.push(today);
+
+  // Afisam modal non-judicativ
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:600;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  overlay.innerHTML=`
+    <div style="background:var(--bg2);border:1px solid rgba(248,113,113,.25);border-radius:20px;padding:1.5rem;max-width:340px;width:100%;text-align:center">
+      <div style="font-size:2.5rem;margin-bottom:.75rem">💙</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--text);margin-bottom:.5rem">E în regulă. Ești uman.</div>
+      <div style="font-size:.85rem;color:var(--text2);line-height:1.6;margin-bottom:1.2rem">O recădere nu înseamnă eșec — înseamnă că încerci. Cei mai mulți oameni reușesc după mai multe încercări. Ce vrei să faci?</div>
+      <button id="relapse-timer-btn" style="width:100%;background:linear-gradient(135deg,var(--green),#22c55e);color:#0d1a12;font-weight:600;border:none;border-radius:10px;padding:.75rem;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:.6rem">🔄 Resetez timerul — mă ridic acum</button>
+      <button id="relapse-full-btn" style="width:100%;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red);border-radius:10px;padding:.75rem;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:.6rem;font-size:.85rem">🗑️ Reset complet — șterg tot și o iau de la zero</button>
+      <button id="relapse-cancel-btn" style="width:100%;background:none;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.85rem;padding:.5rem">Anulează</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('relapse-timer-btn').addEventListener('click',()=>{overlay.remove();doRelapse('timer');});
+  document.getElementById('relapse-full-btn').addEventListener('click',()=>{overlay.remove();doRelapse('full');});
+  document.getElementById('relapse-cancel-btn').addEventListener('click',()=>overlay.remove());
+}
+
+function doRelapse(type){
+  loadData();
+  if(type==='timer'){
+    const kept={name:data.name,cigsPerDay:data.cigsPerDay,packPrice:data.packPrice,reason:data.reason,theme:data.theme,letter:data.letter,reward:data.reward,relapses:data.relapses||[],premiumStart:data.premiumStart,premiumPlan:data.premiumPlan};
+    kept.startDate=new Date().toISOString(); // timestamp complet, nu doar data
+    kept.cravings=[];
+    kept.journal=[];
+    data=kept;
+    saveData();
+    // Navigam inapoi la home curat
+    goTo('home', document.querySelector('.nav-btn'));
+    startTimer();
+    setTimeout(()=>alert('Timer resetat. Fiecare nouă zi e un curaj. 💚'),100);
+  } else {
+    // Reset complet — stergem tot EXCEPTAND abonamentul
+    if(confirm('Ești sigur? Se vor șterge TOATE datele (progres, grădină, scrisoare). Abonamentul Premium se păstrează.')){
+      const premiumStart=data.premiumStart;
+      const premiumPlan=data.premiumPlan;
+      localStorage.removeItem('farafum');
+      data={};
+      // Reputem premium daca exista
+      if(premiumStart){data.premiumStart=premiumStart;data.premiumPlan=premiumPlan;saveData();}
+      document.getElementById('nav').style.display='none';
+      document.getElementById('ai-fab').style.display='none';
+      document.getElementById('sos-fab').style.display='none';
+      document.getElementById('premium-modal').style.display='none';
+      clearInterval(timerInterval);
+      showScreen('setup');
+      document.getElementById('s-name').value='';
+      document.getElementById('s-date').value=new Date().toISOString().split('T')[0];
+      document.getElementById('s-cigs').value='';
+      document.getElementById('s-price').value='';
+      document.getElementById('s-reason').value='familie';
+    }
   }
-  el.style.background='rgba(0,245,255,.12)';
-  el.style.borderColor='var(--neon)';
-  el.style.color='var(--neon)';
 }
 
-function buildPremium(){}
-
-function selectPlan(p){
-  document.getElementById('plan-monthly').style.border='1px solid rgba(0,245,255,.15)';
-  document.getElementById('plan-yearly').style.border='1px solid rgba(0,245,255,.15)';
-  if(p==='monthly'){document.getElementById('plan-monthly').style.border='2px solid var(--neon)';}
-  else{document.getElementById('plan-yearly').style.border='2px solid var(--neon)';}
+function renderSettings(){
+  loadData();
+  document.getElementById('set-name').textContent=data.name||'—';
+  document.getElementById('set-date').textContent=data.startDate||'—';
+  document.getElementById('set-cigs').textContent=(data.cigsPerDay||'—')+'/zi';
+  document.getElementById('set-price').textContent=(data.packPrice||'—')+' RON';
+  const reasons={familie:'👨‍👩‍👧 Familie',sanatate:'❤️ Sănătate',bani:'💰 Bani',sport:'🏃 Sport',altul:'✨ Altul'};
+  document.getElementById('set-reason').textContent=reasons[data.reason]||'—';
+  document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('active'));
+  const activeTheme=document.getElementById('theme-'+(data.theme||'forest'));
+  if(activeTheme)activeTheme.classList.add('active');
+  updatePremiumBanner();
 }
 
-function selectTheme(t){
-  var cards=document.getElementById('themes-grid').children;
-  var names=['dark','aurora','nature','sunset'],labels=['🌑 CYBER ✓','🌌 AURORA','🌿 NATURĂ','🌅 APUS'];
-  for(var i=0;i<cards.length;i++){
-    var isActive=names[i]===t;
-    cards[i].style.border=isActive?'2px solid var(--neon)':'1px solid rgba(0,245,255,.15)';
-    cards[i].lastElementChild.style.color=isActive?'var(--neon)':'rgba(255,255,255,.4)';
-    cards[i].lastElementChild.textContent=labels[i];
+function resetSetup(){
+  if(confirm('Vrei să editezi profilul? Datele de progres se păstrează.')){
+    document.getElementById('nav').style.display='none';
+    document.getElementById('ai-fab').style.display='none';
+    document.getElementById('sos-fab').style.display='none';
+    showScreen('setup');
+    if(data.name)document.getElementById('s-name').value=data.name;
+    if(data.startDate)document.getElementById('s-date').value=data.startDate;
+    if(data.cigsPerDay)document.getElementById('s-cigs').value=data.cigsPerDay;
+    if(data.packPrice)document.getElementById('s-price').value=data.packPrice;
+    if(data.reason)document.getElementById('s-reason').value=data.reason;
   }
 }
 
-function startTrial(){alert('Trial Premium activat! 🎉\nÎn versiunea finală aici va fi integrarea cu Stripe.');}
-function newMotiv(){var el=document.getElementById('motiv');el.style.opacity='0';setTimeout(function(){el.textContent='"'+QUOTES[Math.floor(Math.random()*QUOTES.length)]+'"';el.style.opacity='1';},200);}
-function showModal(){document.getElementById('pmodal').style.display='flex';}
-function closeModal(){document.getElementById('pmodal').style.display='none';}
+// TEME
+const THEMES={
+  forest:{bg:'#0d1a12',bg2:'#111f16',green:'#4ade80',gold:'#f4c842',text:'#e8f5e9',text2:'#a5c8a8',text3:'#6a9b6e'},
+  ocean:{bg:'#080f1a',bg2:'#0d1828',green:'#38bdf8',gold:'#7dd3fc',text:'#e0f2fe',text2:'#7dd3fc',text3:'#3b82f6'},
+  sunset:{bg:'#1a0a08',bg2:'#2d1210',green:'#fb923c',gold:'#fbbf24',text:'#fff7ed',text2:'#fed7aa',text3:'#c2410c'},
+  night:{bg:'#08081a',bg2:'#0f0f2d',green:'#a78bfa',gold:'#c4b5fd',text:'#ede9fe',text2:'#c4b5fd',text3:'#6d28d9'},
+  rose:{bg:'#1a080f',bg2:'#2d0f1c',green:'#f472b6',gold:'#f9a8d4',text:'#fdf2f8',text2:'#f9a8d4',text3:'#be185d'},
+};
+
+function setTheme(name){
+  const t=THEMES[name]||THEMES.forest;
+  const r=document.documentElement.style;
+  r.setProperty('--bg',t.bg);r.setProperty('--bg2',t.bg2);
+  r.setProperty('--green',t.green);r.setProperty('--gold',t.gold);
+  r.setProperty('--text',t.text);r.setProperty('--text2',t.text2);r.setProperty('--text3',t.text3);
+  document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('active'));
+  const el=document.getElementById('theme-'+name);
+  if(el)el.classList.add('active');
+  loadData();data.theme=name;saveData();
+}
+
+function applyTheme(){
+  loadData();
+  if(data.theme)setTheme(data.theme);
+}
+
+// ASISTENT AI
+const AI_RESPONSES={
+  pofta:[
+    'Respiră adânc de 5 ori. Pofta durează maximum 3-5 minute și trece singură 💨',
+    'Bea un pahar mare de apă rece. Hidratarea ajută enorm la reducerea poftelor 💧',
+    'Ieși afară 2 minute. Mișcarea și aerul proaspăt resetează creierul 🌬️',
+    'Ține mâinile ocupate — strânge un pix, scrie ceva, mișcă-te. Pofta va trece! 💪',
+  ],
+  beneficii:[
+    'La 20 min: tensiunea și pulsul revin la normal ❤️\nLa 12h: CO din sânge scade\nLa 2-3 zile: simțuri mai ascuțite\nLa 1 lună: respirație mai ușoară 🫁',
+    'Dupa 1 an, riscul cardiac scade la jumătate față de un fumător. Dupa 5 ani, riscul de AVC se egalizează. Corpul tău e extraordinar! 🧬',
+  ],
+  motivatie:[
+    'Ești mai puternic decât orice poftă. Fiecare secundă fără fum e o victorie. Tu ai ales sănătatea — și asta spune totul despre cine ești 💚',
+    'Gândește-te la cei care te iubesc. Ei au nevoie de tine sănătos, prezent, viu. Ești cadoul lor cel mai mare 👨‍👩‍👧',
+    'Nu renunți la ceva. Câștigi timp, sănătate, bani și libertate. Fiecare zi e un dar pe care ți-l faci ție 🌿',
+  ],
+  recadere:[
+    'O recădere nu înseamnă eșec. Înseamnă că ești uman. Resetează timerul, iartă-te și continuă. Cei mai mulți oameni reușesc după mai multe încercări 💙',
+    'Analizează ce a declanșat recăderea — stres, social, alcool? Identificând trigger-ul, îl poți evita data viitoare. Tu înveți și crești 📈',
+  ],
+  default:[
+    'Sunt aici pentru tine! Poți să-mi spui cum te simți, să-ți dau sfaturi pentru pofte, sau să te motivez când ai nevoie 💚',
+    'Fiecare zi fără fum e o realizare. Sunt mândru de tine! Cu ce te pot ajuta? 🌿',
+    'Renunțarea la fumat e una dintre cele mai bune decizii pe care le poți lua. Cum pot să te sprijin azi? ❤️',
+  ]
+};
+
+function toggleAI(){
+  const panel=document.getElementById('ai-panel');
+  const isVisible=panel.style.display==='flex';
+  panel.style.display=isVisible?'none':'flex';
+  if(!isVisible)document.getElementById('ai-input').focus();
+}
+
+function getAIResponse(msg){
+  const m=msg.toLowerCase();
+  if(m.includes('poft')||m.includes('craving')||m.includes('nevoie'))return pick(AI_RESPONSES.pofta);
+  if(m.includes('benefic')||m.includes('sanat')||m.includes('saptaman')||m.includes('zi'))return pick(AI_RESPONSES.beneficii);
+  if(m.includes('motiv')||m.includes('putere')||m.includes('reusit')||m.includes('pot'))return pick(AI_RESPONSES.motivatie);
+  if(m.includes('recad')||m.includes('fumat')||m.includes('gresit')||m.includes('esec'))return pick(AI_RESPONSES.recadere);
+  return pick(AI_RESPONSES.default);
+}
+
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+function addAIMessage(text,isUser){
+  const msgs=document.getElementById('ai-messages');
+  const div=document.createElement('div');
+  div.className='ai-msg '+(isUser?'ai-msg-user':'ai-msg-bot');
+  div.textContent=text;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function sendAI(){
+  const input=document.getElementById('ai-input');
+  const msg=input.value.trim();
+  if(!msg)return;
+  addAIMessage(msg,true);
+  input.value='';
+  const typing=document.createElement('div');
+  typing.className='ai-typing';typing.textContent='Scrie...';
+  document.getElementById('ai-messages').appendChild(typing);
+  setTimeout(()=>{
+    typing.remove();
+    addAIMessage(getAIResponse(msg),false);
+  },800+Math.random()*600);
+}
+
+function quickMsg(msg){
+  document.getElementById('ai-input').value=msg;
+  sendAI();
+}
+
+// ===== PREMIUM =====
+let selectedPlan='monthly';
+
+function isPremium(){
+  loadData();
+  if(!data.premiumStart)return false;
+  const start=new Date(data.premiumStart).getTime();
+  const now=Date.now();
+  if(data.premiumPlan==='trial') return now-start < 3*24*60*60*1000;
+  return true; // în demo considerăm activ după activare
+}
+
+function openPremium(){
+  document.getElementById('premium-modal').style.display='flex';
+  selectPlan('monthly');
+}
+function closePremium(){document.getElementById('premium-modal').style.display='none';}
+
+function selectPlan(plan){
+  selectedPlan=plan;
+  document.getElementById('plan-monthly').classList.toggle('active-plan',plan==='monthly');
+  document.getElementById('plan-annual').classList.toggle('active-plan',plan==='annual');
+  const cta=document.getElementById('pm-cta');
+  if(plan==='monthly') cta.textContent='Încearcă 3 zile gratuit →';
+  else cta.textContent='Începe anual — 79 RON →';
+}
+
+function startTrial(){
+  loadData();
+  data.premiumStart=new Date().toISOString();
+  data.premiumPlan=selectedPlan==='monthly'?'trial':selectedPlan;
+  saveData();
+  closePremium();
+  updatePremiumBanner();
+  renderHome();
+  renderSettings();
+  alert('✨ Premium activat! Bucură-te de toate funcțiile FărăFum. 💚');
+}
+
+function updatePremiumBanner(){
+  loadData();
+  const banner=document.getElementById('premium-banner');
+  const sub=document.getElementById('premium-banner-sub');
+  if(!banner||!sub)return;
+  if(isPremium()){
+    if(data.premiumPlan==='trial'){
+      const start=new Date(data.premiumStart).getTime();
+      const daysLeft=Math.max(0,3-Math.floor((Date.now()-start)/(1000*60*60*24)));
+      sub.textContent=`Trial activ — ${daysLeft} zile rămase`;
+      banner.style.borderColor='rgba(74,222,128,.4)';
+    } else {
+      sub.textContent='✓ Premium activ — mulțumim!';
+      banner.style.borderColor='rgba(74,222,128,.4)';
+    }
+  } else {
+    sub.textContent='Trial 3 zile gratuit · 10 RON/lună';
+  }
+}
+
+function setThemePremium(name){
+  if(isPremium()){setTheme(name);}
+  else{openPremium();}
+}
+
+function renderBadges(days){
+  const premium=isPremium();
+  document.getElementById('h-badges').innerHTML=BADGES.map(b=>{
+    const earned=days>=b.days;
+    const locked=b.premium&&!premium;
+    return `<div class="badge-item${locked?' badge-locked-premium':''}" onclick="${locked?'openPremium()':''}">
+      <div class="badge-icon ${earned&&!locked?'unlocked':''}" style="${locked?'opacity:.4;cursor:pointer':''}">
+        ${b.icon}${locked?'<span style="position:absolute;top:-3px;right:-3px;font-size:.5rem">✨</span>':''}
+      </div>
+      <div class="badge-name" style="color:${locked?'var(--text3)':earned?'var(--gold)':'var(--text3)'}">${b.name}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== CALENDAR =====
+let calViewYear, calViewMonth;
+const GARDEN_MILESTONES=[
+  {days:1,plant:'🌱',name:'Primul răsad',desc:'Prima zi'},
+  {days:3,plant:'🌿',name:'Frunzuliță',desc:'3 zile'},
+  {days:7,plant:'🌸',name:'Prima floare',desc:'1 săptămână'},
+  {days:14,plant:'🌺',name:'Trandafir',desc:'2 săptămâni'},
+  {days:21,plant:'🌻',name:'Floarea-soarelui',desc:'3 săptămâni'},
+  {days:30,plant:'🌳',name:'Copacul vieții',desc:'1 lună'},
+  {days:60,plant:'🎋',name:'Bambus',desc:'2 luni'},
+  {days:90,plant:'🌴',name:'Palmier',desc:'3 luni'},
+  {days:180,plant:'🎄',name:'Bradul speranței',desc:'6 luni'},
+  {days:365,plant:'🌲',name:'Pădurea libertății',desc:'1 an'},
+];
+
+function renderCalendar(){
+  loadData();
+  const now=new Date();
+  if(!calViewYear){calViewYear=now.getFullYear();calViewMonth=now.getMonth();}
+  const startDate=new Date(data.startDate);
+  const relapses=data.relapses||[];
+
+  const monthNames=['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
+  document.getElementById('cal-month-label').textContent=monthNames[calViewMonth]+' '+calViewYear;
+
+  const firstDay=new Date(calViewYear,calViewMonth,1);
+  let startDow=(firstDay.getDay()+6)%7; // Monday=0
+  const daysInMonth=new Date(calViewYear,calViewMonth+1,0).getDate();
+
+  let html='';
+  for(let i=0;i<startDow;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(calViewYear,calViewMonth,d);
+    const isToday=date.toDateString()===now.toDateString();
+    const isFuture=date>now;
+    const isBeforeStart=date<startDate;
+    const dateStr=date.toISOString().split('T')[0];
+    const isRelapse=relapses.includes(dateStr);
+    let cls='cal-day ';
+    let content=d;
+    if(isFuture||isBeforeStart){cls+='future';}
+    else if(isRelapse){cls+='relapse';content='💨';}
+    else{cls+='smoke-free';if(isToday)cls+=' today';}
+    html+=`<div class="${cls}">${content}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+  renderRewardDisplay();
+}
+
+function calPrev(){calViewMonth--;if(calViewMonth<0){calViewMonth=11;calViewYear--;}renderCalendar();}
+function calNext(){calViewMonth++;if(calViewMonth>11){calViewMonth=0;calViewYear++;}renderCalendar();}
+
+// ===== RECOMPENSE =====
+function openReward(){document.getElementById('reward-modal').style.display='flex';}
+function closeReward(){document.getElementById('reward-modal').style.display='none';}
+function saveReward(){
+  const name=document.getElementById('rw-name').value.trim();
+  const amount=parseFloat(document.getElementById('rw-amount').value)||0;
+  if(!name||!amount)return;
+  loadData();data.reward={name,amount};saveData();
+  closeReward();renderRewardDisplay();
+}
+function renderRewardDisplay(){
+  loadData();
+  const el=document.getElementById('reward-display');
+  if(!el)return;
+  if(!data.reward){
+    el.innerHTML=`<div style="text-align:center;padding:1rem;color:var(--text3);font-size:.85rem">Nicio recompensă setată.<br>Setează un obiectiv financiar! 🎯</div>`;
+    return;
+  }
+  const ms=getElapsed();
+  const hours=ms/(1000*60*60);
+  const cigsAvoided=Math.floor(hours/24*data.cigsPerDay);
+  const saved=parseFloat((cigsAvoided/20*data.packPrice).toFixed(1));
+  const pct=Math.min(saved/data.reward.amount*100,100);
+  const remaining=Math.max(data.reward.amount-saved,0).toFixed(1);
+  el.innerHTML=`
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <div style="font-size:.9rem;color:var(--text);font-weight:500">${data.reward.name}</div>
+        <div style="font-size:.8rem;color:var(--gold)">${saved} / ${data.reward.amount} RON</div>
+      </div>
+      <div class="reward-bar-wrap"><div class="reward-bar" style="width:${pct.toFixed(0)}%"></div></div>
+      <div style="font-size:.72rem;color:var(--text3);margin-top:.3rem">${pct>=100?'🎉 Ai atins obiectivul! Felicitări!':'Mai ai nevoie de '+remaining+' RON — '+Math.round(pct)+'% atins'}</div>
+    </div>`;
+}
+
+// ===== GRADINA =====
+function renderGarden(){
+  loadData();
+  const ms=getElapsed();
+  const days=Math.floor(ms/(1000*60*60*24));
+  const container=document.getElementById('garden-plants');
+  const milestonesEl=document.getElementById('garden-milestones');
+
+  // Plante deblocate
+  const unlocked=GARDEN_MILESTONES.filter(m=>days>=m.days);
+  const locked=GARDEN_MILESTONES.filter(m=>days<m.days);
+
+  let plantsHtml=unlocked.map((m,i)=>`
+    <div class="plant" style="animation-delay:${i*0.2}s">
+      <div class="plant-emoji">${m.plant}</div>
+      <div class="plant-name">${m.name}</div>
+    </div>`).join('');
+  if(!plantsHtml) plantsHtml=`<div style="position:absolute;bottom:40px;left:50%;transform:translateX(-50%);text-align:center;color:var(--text3);font-size:.82rem">Grădina ta te așteaptă.<br>Prima plantă apare după 1 zi 🌱</div>`;
+  container.innerHTML=plantsHtml;
+
+  // Lista jaloane
+  milestonesEl.innerHTML=GARDEN_MILESTONES.map(m=>{
+    const done=days>=m.days;
+    return `<div class="milestone-row">
+      <div class="milestone-plant">${m.plant}</div>
+      <div class="milestone-info">
+        <div class="milestone-name">${m.name}</div>
+        <div class="milestone-days">${m.desc}</div>
+      </div>
+      <div class="milestone-status ${done?'done':'pending'}">${done?'✓ Deblocat':'Ziua '+m.days}</div>
+    </div>`;
+  }).join('');
+
+  // Status scrisoare
+  const letterEl=document.getElementById('letter-status');
+  const btnEl=document.getElementById('letter-btn');
+  if(data.letter){
+    if(days>=365){
+      letterEl.textContent='✉️ Scrisoarea ta te așteaptă!';
+      if(btnEl){btnEl.textContent='Citește →';btnEl.onclick=()=>revealLetter();}
+    } else {
+      const daysLeft=365-days;
+      letterEl.textContent=`Sigilată — se deschide în ${daysLeft} zile`;
+      if(btnEl){btnEl.textContent='Sigilată 🔒';btnEl.disabled=true;btnEl.style.opacity='.5';}
+    }
+  } else {
+    if(btnEl){btnEl.textContent='Scrie →';btnEl.disabled=false;btnEl.style.opacity='1';btnEl.onclick=()=>openLetter();}
+  }
+}
+
+// ===== SCRISOARE DIN VIITOR =====
+function openLetter(){
+  loadData();
+  if(data.letter){
+    const days=Math.floor(getElapsed()/(1000*60*60*24));
+    if(days>=365){revealLetter();return;}
+    return;
+  }
+  document.getElementById('letter-modal').style.display='flex';
+}
+function closeLetter(){document.getElementById('letter-modal').style.display='none';}
+function saveLetter(){
+  const text=document.getElementById('letter-text').value.trim();
+  if(!text)return;
+  loadData();data.letter=text;saveData();
+  closeLetter();
+  renderGarden();
+  alert('✉️ Scrisoarea a fost sigilată. Se va deschide după 365 de zile. 💚');
+}
+function revealLetter(){
+  loadData();
+  if(!data.letter)return;
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:600;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  overlay.innerHTML=`
+    <div style="background:var(--bg2);border:1px solid rgba(244,200,66,.4);border-radius:20px;padding:1.5rem;max-width:360px;width:100%">
+      <div style="text-align:center;font-size:2rem;margin-bottom:.5rem">✉️</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold);text-align:center;margin-bottom:1rem">Scrisoarea ta din trecut</div>
+      <div style="font-size:.88rem;color:var(--text2);line-height:1.7;background:rgba(255,255,255,.04);border-radius:10px;padding:1rem;margin-bottom:1rem;white-space:pre-wrap">${data.letter}</div>
+      <button onclick="this.closest('div[style]').remove()" style="width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1200;font-weight:600;border:none;border-radius:10px;padding:.75rem;font-family:'DM Sans',sans-serif;cursor:pointer">Închide cu drag 💚</button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+// ===== MOD SOS =====
+let sosTimer=null, sosBreathTimer=null, sosSeconds=180;
+const SOS_MSGS=[
+  '„Această poftă trece în 3 minute. Ești mai puternic decât ea."',
+  '„Respiră. Fiecare secundă fără fum e o victorie."',
+  '„Gândește-te la cei care te iubesc. Fă asta pentru ei."',
+  '„Corpul tău se vindecă acum. Nu-l opri."',
+];
+const BREATH_PHASES=[
+  {text:'Inspiră',scale:'1.35',dur:4000},
+  {text:'Ține',scale:'1.35',dur:7000},
+  {text:'Expiră',scale:'1',dur:8000},
+];
+
+function openSOS(){
+  if(!isPremium()){openPremium();return;}
+  sosSeconds=180;
+  document.getElementById('sos-modal').style.display='flex';
+  document.getElementById('sos-msg').textContent=SOS_MSGS[Math.floor(Math.random()*SOS_MSGS.length)];
+  updateSOSTimer();
+  sosTimer=setInterval(()=>{
+    sosSeconds--;
+    updateSOSTimer();
+    if(sosSeconds<=0)closeSOS(false);
+  },1000);
+  runBreathCycle(0);
+}
+
+function updateSOSTimer(){
+  const m=Math.floor(sosSeconds/60),s=sosSeconds%60;
+  document.getElementById('sos-timer').textContent=`${m}:${String(s).padStart(2,'0')}`;
+}
+
+function runBreathCycle(phaseIdx){
+  const circle=document.getElementById('breath-circle');
+  if(!circle)return;
+  const phase=BREATH_PHASES[phaseIdx%3];
+  circle.textContent=phase.text;
+  circle.style.transform=`scale(${phase.scale})`;
+  circle.style.background=phaseIdx%3===2?'rgba(74,222,128,.05)':'rgba(74,222,128,.2)';
+  sosBreathTimer=setTimeout(()=>runBreathCycle(phaseIdx+1),phase.dur);
+}
+
+function closeSOS(skipped){
+  clearInterval(sosTimer);clearTimeout(sosBreathTimer);
+  document.getElementById('sos-modal').style.display='none';
+  document.getElementById('breath-circle').style.transform='scale(1)';
+  if(!skipped){
+    loadData();
+    if(!data.cravings)data.cravings=[];
+    data.cravings.push(Date.now());
+    saveData();
+  }
+}
+
+// ===== MODAL RECOMPENSE =====
+function openReward(){document.getElementById('reward-modal').style.display='flex';}
+function closeReward(){document.getElementById('reward-modal').style.display='none';}
+
+// INTRO CINEMATIC
+(function(){
+  const SCENE_DURATION=2000;
+  const TOTAL_SCENES=5;
+  let currentScene=0;
+  let introTimer=null;
+
+  function createParticles(){
+    const container=document.getElementById('intro-particles');
+    if(!container)return;
+    for(let i=0;i<18;i++){
+      const p=document.createElement('div');
+      p.className='particle';
+      p.style.left=Math.random()*100+'%';
+      p.style.top=Math.random()*100+'%';
+      p.style.animationDuration=(4+Math.random()*8)+'s';
+      p.style.animationDelay=(Math.random()*6)+'s';
+      p.style.opacity=Math.random()*0.5;
+      container.appendChild(p);
+    }
+  }
+
+  function showScene(idx){
+    document.querySelectorAll('.intro-scene').forEach((s,i)=>{
+      s.classList.toggle('visible',i===idx);
+    });
+    document.querySelectorAll('.intro-dot').forEach((d,i)=>{
+      d.classList.toggle('active',i===idx);
+    });
+  }
+
+  function nextScene(){
+    currentScene++;
+    if(currentScene>=TOTAL_SCENES){skipIntro();return;}
+    showScene(currentScene);
+  }
+
+  window.skipIntro=function(){
+    clearInterval(introTimer);
+    const overlay=document.getElementById('intro-overlay');
+    overlay.style.transition='opacity .8s ease';
+    overlay.style.opacity='0';
+    setTimeout(()=>{overlay.classList.add('hidden');},800);
+  };
+
+  createParticles();
+  showScene(0);
+  introTimer=setInterval(nextScene,SCENE_DURATION);
+})();
+
+init();
 </script>
 </body>
 </html>
