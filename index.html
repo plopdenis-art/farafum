@@ -2,7 +2,7 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>FărăFum</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap');
@@ -116,13 +116,13 @@
   .sr-val{font-size:.85rem;color:var(--text3)}
   .sr-link{font-size:.85rem;color:var(--green);cursor:pointer}
 
-  #nav{background:var(--bg2);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:.6rem 0 .5rem;flex-shrink:0}
+  #nav{background:#dcfce7;border-top:1px solid #86efac;display:flex;justify-content:space-around;padding:.6rem 0 .5rem;flex-shrink:0}
   .nav-btn{display:flex;flex-direction:column;align-items:center;gap:.2rem;background:none;border:none;cursor:pointer;padding:.3rem .6rem;border-radius:10px;transition:background .15s}
-  .nav-btn:active{background:var(--card)}
-  .nav-btn svg{width:22px;height:22px;stroke:var(--text3);stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:stroke .15s}
-  .nav-btn span{font-size:.62rem;color:var(--text3);transition:color .15s;font-family:'DM Sans',sans-serif}
-  .nav-btn.active svg{stroke:var(--green)}
-  .nav-btn.active span{color:var(--green)}
+  .nav-btn:active{background:rgba(74,222,128,.2)}
+  .nav-btn svg{width:22px;height:22px;stroke:#6b7280;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:stroke .15s}
+  .nav-btn span{font-size:.62rem;color:#6b7280;transition:color .15s;font-family:'DM Sans',sans-serif}
+  .nav-btn.active svg{stroke:#15803d}
+  .nav-btn.active span{color:#15803d}
 
   .lungs-wrap{display:flex;justify-content:center;margin:1rem 0}
   .lungs-svg .lung-fill{transition:opacity 2s ease}
@@ -237,6 +237,7 @@
       <div class="setup-sub">Primul pas spre libertate. Hai să personalizăm călătoria ta.</div>
       <div class="field"><label>Numele tău</label><input type="text" id="s-name" placeholder="ex: Andrei" /></div>
       <div class="field"><label>Data la care ai renunțat</label><input type="date" id="s-date" /></div>
+      <div class="field"><label>Ora la care ai renunțat</label><input type="time" id="s-time" /></div>
       <div class="field"><label>Țigări pe zi (înainte)</label><input type="number" id="s-cigs" placeholder="ex: 15" min="1" /></div>
       <div class="field"><label>Prețul unui pachet (RON)</label><input type="number" id="s-price" placeholder="ex: 25" min="1" step="0.5" /></div>
       <div class="field">
@@ -282,11 +283,11 @@
         </div>
       </div>
       <div class="section-title">🎯 Misiunea de azi</div>
-      <div class="mission-card">
+      <div class="mission-card" id="mission-card">
         <div class="mission-icon" id="m-icon">🌬️</div>
-        <div>
+        <div style="flex:1">
           <div class="mission-text" id="m-text">Respiră adânc de 10 ori când simți nevoia de o țigară.</div>
-          <div class="mission-done">Apasă dacă ai reușit ✓</div>
+          <div id="mission-done-btn" onclick="completeMission()" style="font-size:.75rem;color:var(--green);margin-top:.4rem;cursor:pointer;display:inline-block;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:20px;padding:.2rem .7rem">Apasă dacă ai reușit ✓</div>
         </div>
       </div>
       <div class="section-title">🫁 Plămânii tăi</div>
@@ -536,10 +537,14 @@
       <button onclick="sendAI()" style="background:var(--green);border:none;border-radius:8px;padding:.5rem .8rem;cursor:pointer;font-size:1rem">➤</button>
     </div>
     <div style="padding:.5rem .75rem;display:flex;flex-wrap:wrap;gap:.4rem;border-top:1px solid var(--border)">
-      <button class="ai-quick" onclick="quickMsg('Am o poftă puternică acum')">😣 Am o poftă</button>
-      <button class="ai-quick" onclick="quickMsg('Ce beneficii am după 1 săptămână?')">📈 Beneficii</button>
-      <button class="ai-quick" onclick="quickMsg('Motivează-mă!')">💪 Motivație</button>
-      <button class="ai-quick" onclick="quickMsg('Cum depășesc o recădere?')">🔄 Recădere</button>
+      <button class="ai-quick" onclick="quickMsg('Am o poftă puternică acum')">😤 Am o poftă</button>
+      <button class="ai-quick" onclick="quickMsg('Ce beneficii am pentru sănătate?')">❤️ Sănătate</button>
+      <button class="ai-quick" onclick="quickMsg('Motivează-mă să continui!')">💪 Motivație</button>
+      <button class="ai-quick" onclick="quickMsg('Am recăzut, ce fac acum?')">💙 Recădere</button>
+      <button class="ai-quick" onclick="quickMsg('Nu pot să dorm bine')">😴 Somn</button>
+      <button class="ai-quick" onclick="quickMsg('Sunt stresat și îmi vine să fumez')">😰 Stres</button>
+      <button class="ai-quick" onclick="quickMsg('Câți bani am economisit?')">💰 Bani</button>
+      <button class="ai-quick" onclick="quickMsg('Cum mă ajută sportul?')">🏃 Sport</button>
     </div>
   </div>
 
@@ -712,7 +717,10 @@ function init(){
   applyTheme();
   if(!data.name||!data.startDate){
     showScreen('setup');
-    document.getElementById('s-date').value=new Date().toISOString().split('T')[0];
+    const nowD=new Date();
+    const localDate=nowD.getFullYear()+'-'+String(nowD.getMonth()+1).padStart(2,'0')+'-'+String(nowD.getDate()).padStart(2,'0');
+    document.getElementById('s-date').value=localDate;
+    document.getElementById('s-time').value=String(nowD.getHours()).padStart(2,'0')+':'+String(nowD.getMinutes()).padStart(2,'0');
   } else {
     document.getElementById('nav').style.display='flex';
     document.getElementById('ai-fab').style.display='flex';
@@ -742,13 +750,16 @@ function goTo(id,btn){
 function saveSetup(){
   const name=document.getElementById('s-name').value.trim();
   const date=document.getElementById('s-date').value;
+  const time=document.getElementById('s-time').value||'00:00';
   const cigs=parseInt(document.getElementById('s-cigs').value)||15;
   const price=parseFloat(document.getElementById('s-price').value)||25;
   const reason=document.getElementById('s-reason').value;
   if(!name||!date){alert('Te rog completează numele și data.');return;}
-  // Pastram datele existente (jurnal, craving-uri, plante, scrisoare etc.)
-  const isEdit=!!(data.name); // daca exista deja un profil = editare
-  data=Object.assign({cravings:[],journal:[]}, data, {name,startDate:date,cigsPerDay:cigs,packPrice:price,reason});
+  // Combinam data + ora ca timestamp local corect
+  const [y,m,d]=date.split('-').map(Number);
+  const [hh,mm]=(time||'00:00').split(':').map(Number);
+  const startDate=new Date(y,m-1,d,hh,mm,0).toISOString();
+  data=Object.assign({cravings:[],journal:[]}, data, {name,startDate,cigsPerDay:cigs,packPrice:price,reason});
   saveData();
   document.getElementById('nav').style.display='flex';
   document.getElementById('ai-fab').style.display='flex';
@@ -817,6 +828,21 @@ function renderHome(){
   const m=MISSIONS[days%MISSIONS.length];
   document.getElementById('m-icon').textContent=m.icon;
   document.getElementById('m-text').textContent=m.text;
+  const missionKey='mission_'+new Date().toISOString().split('T')[0];
+  const mDone=data[missionKey];
+  const btn=document.getElementById('mission-done-btn');
+  const card=document.getElementById('mission-card');
+  if(btn){
+    if(mDone){
+      btn.textContent='✅ Misiune completată!';
+      btn.style.color='#15803d';btn.style.background='rgba(74,222,128,.2)';btn.style.cursor='default';btn.onclick=null;
+      if(card)card.style.borderColor='rgba(74,222,128,.4)';
+    } else {
+      btn.textContent='Apasă dacă ai reușit ✓';
+      btn.style.color='var(--green)';btn.style.background='rgba(74,222,128,.1)';btn.style.cursor='pointer';btn.onclick=completeMission;
+      if(card)card.style.borderColor='';
+    }
+  }
   renderBadges(days);updateRing(ms);updateLungs(ms);
 }
 
@@ -903,6 +929,23 @@ function addJournalEntry(){
   renderJournal();
 }
 
+function completeMission(){
+  loadData();
+  const missionKey='mission_'+new Date().toISOString().split('T')[0];
+  data[missionKey]=true;
+  saveData();
+  const btn=document.getElementById('mission-done-btn');
+  const card=document.getElementById('mission-card');
+  if(btn){
+    btn.textContent='✅ Misiune completată!';
+    btn.style.color='#15803d';btn.style.background='rgba(74,222,128,.2)';btn.style.cursor='default';btn.onclick=null;
+  }
+  if(card)card.style.borderColor='rgba(74,222,128,.4)';
+  // Animatie rapida
+  const icon=document.getElementById('m-icon');
+  if(icon){icon.style.transform='scale(1.4)';setTimeout(()=>icon.style.transform='scale(1)',400);}
+}
+
 function logCraving(){goTo('journal',document.querySelectorAll('.nav-btn')[3]);}
 
 function logRelapse(){
@@ -960,6 +1003,8 @@ function doRelapse(type){
       showScreen('setup');
       document.getElementById('s-name').value='';
       document.getElementById('s-date').value=new Date().toISOString().split('T')[0];
+      const nr=new Date();
+      document.getElementById('s-time').value=String(nr.getHours()).padStart(2,'0')+':'+String(nr.getMinutes()).padStart(2,'0');
       document.getElementById('s-cigs').value='';
       document.getElementById('s-price').value='';
       document.getElementById('s-reason').value='familie';
@@ -988,7 +1033,11 @@ function resetSetup(){
     document.getElementById('sos-fab').style.display='none';
     showScreen('setup');
     if(data.name)document.getElementById('s-name').value=data.name;
-    if(data.startDate)document.getElementById('s-date').value=data.startDate;
+    if(data.startDate){
+      const d=new Date(data.startDate);
+      document.getElementById('s-date').value=d.toISOString().split('T')[0];
+      document.getElementById('s-time').value=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    }
     if(data.cigsPerDay)document.getElementById('s-cigs').value=data.cigsPerDay;
     if(data.packPrice)document.getElementById('s-price').value=data.packPrice;
     if(data.reason)document.getElementById('s-reason').value=data.reason;
@@ -1023,29 +1072,54 @@ function applyTheme(){
 
 // ASISTENT AI
 const AI_RESPONSES={
+  salut:[
+    'Bună! Mă bucur că ești aici 💚 Sunt asistentul tău personal FărăFum. Știu că drumul nu e ușor, dar ești pe calea cea bună. Cum te simți azi? Spune-mi orice — despre pofte, stări, sau pur și simplu cum îți merge.',
+    'Salut! Felicitări că ai deschis aplicația — asta înseamnă că ești hotărât 🌿 Sunt aici să te ajut în orice moment. Poți să mă întrebi despre pofte, simptome de sevraj, beneficii pentru sănătate, sau să îmi spui cum te simți. Ce ai pe suflet?',
+  ],
   pofta:[
-    'Respiră adânc de 5 ori. Pofta durează maximum 3-5 minute și trece singură 💨',
-    'Bea un pahar mare de apă rece. Hidratarea ajută enorm la reducerea poftelor 💧',
-    'Ieși afară 2 minute. Mișcarea și aerul proaspăt resetează creierul 🌬️',
-    'Ține mâinile ocupate — strânge un pix, scrie ceva, mișcă-te. Pofta va trece! 💪',
+    'Înțeleg perfect — o poftă puternică e grea, dar știi ce? Durează MAXIM 3-5 minute. Creierul tău încearcă să te convingă că ai nevoie, dar nu e adevărat.\n\nFă asta acum:\n1. Respiră adânc 4 secunde — ține 4 — expiră 4\n2. Bea un pahar de apă rece\n3. Schimbă locul unde ești — mergi în altă cameră\n\nPofta va trece. Promis. Tu ești mai puternic decât ea 💪',
+    'Știu că e greu în acest moment. Pofta e reală — e creierul tău care cere nicotină. Dar corpul tău nu are nevoie de ea.\n\nCe funcționează cel mai bine:\n• Mișcă-te — 10 flotări, 20 genuflexiuni, orice\n• Mestecă gumă sau mănâncă ceva crocant\n• Sună pe cineva drag — distragerea e arma #1\n\nÎn câteva minute vei fi mândru că ai rezistat 🌿',
+    'O poftă e ca un val — vine, crește, și apoi dispare. Nu trebuie să faci nimic special — doar să o lași să treacă.\n\nTehnica 5-4-3-2-1:\n👁️ 5 lucruri pe care le vezi\n👂 4 sunete pe care le auzi\n✋ 3 lucruri pe care le poți atinge\n👃 2 mirosuri\n👄 1 gust\n\nAceastă tehnică de grounding resetează creierul instant. Încearcă acum! 💚',
+  ],
+  sevraj:[
+    'Simptomele de sevraj sunt normale și temporare — corpul tău se curăță și se vindecă.\n\nCe poți simți în primele zile:\n😤 Iritabilitate — normal, trece în 1-2 săptămâni\n😴 Oboseală — corpul se reechilibrează\n🤕 Dureri de cap — bea multă apă\n😰 Anxietate — respirații profunde ajută enorm\n\nBucurie: după 72 de ore, nicotina e complet eliminată din corp. Rămân doar obiceiurile mentale — și pe acelea le vindecăm împreună 💙',
+    'Sevrajul la nicotină e real, dar gestionabil. Știința spune că vârful e între zilele 2-3 și scade rapid după aceea.\n\nSfaturi practice:\n• Bea 2-3 litri de apă pe zi — accelerează eliminarea toxinelor\n• Evită cafeaua în primele zile — amplifică anxietatea\n• Dormitul mai mult ajută enorm\n• Exercițiul fizic eliberează endorfine care compensează lipsa nicotinei\n\nEști pe drumul cel bun. Corpul tău te mulțumește! 🌿',
   ],
   beneficii:[
-    'La 20 min: tensiunea și pulsul revin la normal ❤️\nLa 12h: CO din sânge scade\nLa 2-3 zile: simțuri mai ascuțite\nLa 1 lună: respirație mai ușoară 🫁',
-    'Dupa 1 an, riscul cardiac scade la jumătate față de un fumător. Dupa 5 ani, riscul de AVC se egalizează. Corpul tău e extraordinar! 🧬',
+    'Corpul tău se vindecă mai repede decât crezi! Iată ce se întâmplă:\n\n⏱️ 20 minute — tensiunea și pulsul revin la normal\n🩸 12 ore — monoxidul de carbon dispare din sânge\n💪 2-3 zile — nicotina eliminată complet\n👃 48 ore — mirosul și gustul se îmbunătățesc\n🫁 2 săptămâni — respirația devine mai ușoară\n❤️ 1 an — riscul cardiac scade la jumătate\n🧬 5 ani — riscul de AVC egal cu al unui nefumător\n🏆 10 ani — riscul de cancer pulmonar scade cu 50%\n\nFiecare secundă contează! 💚',
+    'Știi cât de mult câștigi renunțând?\n\n🧠 Mental: claritate, concentrare mai bună, mai puțin stres pe termen lung\n💰 Financiar: dacă fumezi 1 pachet/zi la 25 RON = 9,125 RON/an economisiți\n⏰ Timp: fumătorii petrec ~1.5 ore/zi fumând — recuperezi 22 de zile pe an\n👨‍👩‍👧 Familie: copiii tăi nu mai respiră fum, riscul lor de astm scade\n😴 Somn: calitatea somnului se îmbunătățește semnificativ\n🏃 Sport: capacitatea pulmonară crește cu 30% în 9 luni\n\nEști pe drumul cel mai bun! 🌿',
   ],
   motivatie:[
-    'Ești mai puternic decât orice poftă. Fiecare secundă fără fum e o victorie. Tu ai ales sănătatea — și asta spune totul despre cine ești 💚',
-    'Gândește-te la cei care te iubesc. Ei au nevoie de tine sănătos, prezent, viu. Ești cadoul lor cel mai mare 👨‍👩‍👧',
-    'Nu renunți la ceva. Câștigi timp, sănătate, bani și libertate. Fiecare zi e un dar pe care ți-l faci ție 🌿',
+    'Ești deja un erou 🏆\n\nGândește-te: milioane de oameni încearcă să renunțe la fumat în fiecare an. Puțini au curajul să o facă. Tu ai făcut primul pas — cel mai greu.\n\nFiecare zi fără fum înseamnă:\n• O victorie împotriva adicției\n• Un cadou pentru familia ta\n• Bani economisiți\n• Ani adăugați la viața ta\n\nNu ești singur în asta. Sunt aici cu tine, pas cu pas 💚',
+    'Motivația vine și pleacă — asta e normal. Dar hotărârea ta rămâne.\n\nAmintește-ți DE CE ai început:\n💙 Pentru cei pe care îi iubești\n❤️ Pentru sănătatea ta\n🌟 Pentru că meriți o viață mai bună\n\nCând simți că vrei să renunți la renunțare, gândește-te: cum vei fi peste 1 an dacă continui? Sănătos, liber, mândru de tine.\n\nTu poți. Eu cred în tine 🌿',
+    'Știu că sunt zile grele. Zile în care totul pare prea mult și o singură țigară pare "inofensivă".\n\nDar știi ce? Nu există "doar una". Creierul tău va vrea alta. Și alta.\n\nÎn schimb, există "încă o zi". Și dacă faci asta zi de zi, la un moment dat nu mai trebuie să te lupți — ești liber.\n\nEști aproape acolo. Nu te opri acum 💪',
   ],
   recadere:[
-    'O recădere nu înseamnă eșec. Înseamnă că ești uman. Resetează timerul, iartă-te și continuă. Cei mai mulți oameni reușesc după mai multe încercări 💙',
-    'Analizează ce a declanșat recăderea — stres, social, alcool? Identificând trigger-ul, îl poți evita data viitoare. Tu înveți și crești 📈',
+    'Respiră. Nu ești un eșec — ești uman 💙\n\nStatistică reală: 80% dintre cei care reușesc să renunțe definitiv la fumat au avut cel puțin o recădere. Recăderea face parte din proces.\n\nCe să faci acum:\n1. Nu te pedepsi — autocompasiunea e mai eficientă decât vinovăția\n2. Analizează CE a declanșat — stres, alcool, social?\n3. Resetează timerul și o ia de la capăt\n4. Notează în jurnal ce s-a întâmplat — data viitoare vei fi pregătit\n\nFiecare încercare te face mai puternic 🌿',
+    'O recădere nu șterge tot progresul tău. Corpul tău se vindecă în continuare.\n\nGândește-te la asta: dacă ai mers 30 de zile fără fum și ai fumat o țigară, nu ești înapoi la zero. Ai demonstrat că poți. Creierul tău știe deja cum e să fie liber.\n\nPlanul pentru mâine:\n• Resetează timerul — cu ora exactă\n• Identifică trigger-ul și gândește cum să-l eviți\n• Spune cuiva drag că ai recăzut — responsabilitatea socială ajută\n\nMâine e o nouă șansă 💚',
+  ],
+  somn:[
+    'Somnul se îmbunătățește semnificativ după renunțarea la fumat — dar primele 1-2 săptămâni pot fi mai agitate.\n\nDe ce? Nicotina era un stimulent care afecta ciclurile de somn. Acum creierul se reajustează.\n\nSfaturi pentru somn mai bun:\n🌙 Evită ecranele cu 1 oră înainte de culcare\n🍵 Ceai de mușețel sau lavandă seara\n🌡️ Camera mai răcoroasă ajută (18-20°C)\n🧘 5 minute de respirație profundă înainte de somn\n\nDupă 2 săptămâni vei dormi mai bine ca niciodată! 😴',
+  ],
+  stres:[
+    'Stresul e unul dintre cei mai mari triggeri pentru poftă — și asta e perfect normal.\n\nFostul fumător simțea că țigara "calmează" stresul. În realitate, nicotina crea stresul extra, iar țigara îl "rezolva" temporar. E un cerc vicios.\n\nAcum ai nevoie de noi metode de coping:\n🫁 Respirația 4-7-8: inspiră 4s, ține 7s, expiră 8s\n🚶 O plimbare scurtă de 10 minute\n✍️ Scrie ce te stresează — externalizeaza\n🎵 Muzică care te calmează\n💬 Vorbește cu cineva drag\n\nStresul trece. Tu rămâi fără fum 💪',
+  ],
+  greutate:[
+    'Mulți oameni se tem că se vor îngrășa după ce renunță la fumat — și e o teamă legitimă.\n\nAdevărul: în medie, oamenii iau 2-4 kg în primele luni. Dar asta e temporar și gestionabil.\n\nDe ce se întâmplă?\n• Metabolismul se normalizează (nicotina îl accelera artificial)\n• Gustul și mirosul revin — mâncarea e mai plăcută\n• Mâncatul înlocuiește gestul de a fuma\n\nCum să gestionezi:\n🥕 Ține legume tăiate la îndemână\n💧 Bea apă când simți nevoia să "faci ceva cu mâinile"\n🚶 30 minute de mers pe jos zilnic\n\nSănătatea câștigată bate orice kilogram în plus! 💚',
+  ],
+  copii:[
+    'Că renunți la fumat pentru copiii tăi — asta e cel mai frumos dar pe care poți să li-l faci 💙\n\nȘtiai că:\n• Copiii fumătorilor au cu 70% mai mult risc de astm\n• Fumatul pasiv crește riscul de infecții respiratorii la copii\n• Copiii fumătorilor au șanse mai mari să fumeze la rândul lor\n• Renunțând, le arăți că se poate — ești modelul lor\n\nFiecare zi fără fum e o zi în care plămânii lor respiră mai curat. Ești un părinte extraordinar 🌿',
+  ],
+  bani:[
+    'Să facem un calcul real al banilor economisiți 💰\n\nDacă fumezi 1 pachet/zi la 25 RON:\n• 1 săptămână = 175 RON\n• 1 lună = 750 RON\n• 1 an = 9,125 RON\n• 5 ani = 45,625 RON\n• 10 ani = 91,250 RON\n\nCu banii din 1 an poți:\n✈️ O vacanță în familie\n📱 Un telefon nou\n🎓 Cursuri de dezvoltare personală\n🏠 Parte din o rată la casă\n\nBanii pe care nu îi mai arzi sunt bani reali în buzunarul tău. Setează o recompensă în aplicație și vizualizează! 🎯',
+  ],
+  sport:[
+    'Renunțarea la fumat și sportul sunt cea mai bună combinație! 🏃\n\nCe se întâmplă cu capacitatea ta fizică:\n• 2 săptămâni: respirația mai ușoară la efort\n• 1-3 luni: rezistența cardio crește vizibil\n• 9 luni: capacitatea pulmonară crește cu 30%\n• 1 an: poți face sporturi pe care le-ai abandonat\n\nSfat: începe cu 20 minute de mers pe jos zilnic. Când simți o poftă, fă 10 flotări sau 20 genuflexiuni. Exercițiul eliberează dopamină — aceeași substanță pe care o oferea nicotina, dar natural și sănătos.\n\nCorpul tău e gata să performeze! 💪',
   ],
   default:[
-    'Sunt aici pentru tine! Poți să-mi spui cum te simți, să-ți dau sfaturi pentru pofte, sau să te motivez când ai nevoie 💚',
-    'Fiecare zi fără fum e o realizare. Sunt mândru de tine! Cu ce te pot ajuta? 🌿',
-    'Renunțarea la fumat e una dintre cele mai bune decizii pe care le poți lua. Cum pot să te sprijin azi? ❤️',
+    'Sunt asistentul tău personal FărăFum și sunt aici să te ajut cu orice 💚\n\nPoți să mă întrebi despre:\n• 😤 Cum să depășești o poftă acum\n• 🫁 Simptome de sevraj și ce e normal\n• ❤️ Beneficii pentru sănătate\n• 💰 Banii economisiți\n• 👨‍👩‍👧 Cum îi afectează pe cei dragi\n• 😴 Somn și stres\n• 🏃 Sport după renunțare\n• 💙 Cum să gestionezi o recădere\n\nSau pur și simplu spune-mi cum te simți azi. Sunt aici! 🌿',
+    'Bună întrebare! Spune-mi mai multe — cu cât îmi dai mai multe detalii despre situația ta, cu atât îți pot oferi sfaturi mai bune 💚\n\nDe exemplu: de câte zile ești fără fum? Ce te-a determinat să renunți? Ce triggeri simți cel mai des?\n\nSunt aici să te sprijin pe tot parcursul călătoriei tale! 🌿',
+    'Ești în locul potrivit 💙 Renunțarea la fumat e una dintre cele mai curajoase decizii.\n\nCum pot să te ajut azi? Spune-mi ce simți sau ce te preocupă — pot oferi sfaturi despre pofte, sevraj, motivație, beneficii pentru sănătate, sau orice altceva ai nevoie.',
   ]
 };
 
@@ -1058,10 +1132,35 @@ function toggleAI(){
 
 function getAIResponse(msg){
   const m=msg.toLowerCase();
-  if(m.includes('poft')||m.includes('craving')||m.includes('nevoie'))return pick(AI_RESPONSES.pofta);
-  if(m.includes('benefic')||m.includes('sanat')||m.includes('saptaman')||m.includes('zi'))return pick(AI_RESPONSES.beneficii);
-  if(m.includes('motiv')||m.includes('putere')||m.includes('reusit')||m.includes('pot'))return pick(AI_RESPONSES.motivatie);
-  if(m.includes('recad')||m.includes('fumat')||m.includes('gresit')||m.includes('esec'))return pick(AI_RESPONSES.recadere);
+  // Salut
+  if(m.match(/bun[aă]|salut|hello|hey|bun[aă] ziua|bun[aă] seara/))return pick(AI_RESPONSES.salut);
+  // Pofta / craving
+  if(m.match(/poft[aă]|craving|nevoie|imi vine|mi-e dor|vreau|trag|trag[eă]/))return pick(AI_RESPONSES.pofta);
+  // Sevraj / simptome
+  if(m.match(/sevraj|simptom|cap|durere|iritab|nervos|agitat|anxiet|transpir|ame[tț]/))return pick(AI_RESPONSES.sevraj);
+  // Beneficii / sanatate
+  if(m.match(/benefic|s[aă]n[aă]t|pl[aă]m[aă]n|inim[aă]|cancer|risc|vindecare|corp|organ/))return pick(AI_RESPONSES.beneficii);
+  // Motivatie
+  if(m.match(/motiv|putere|nu mai pot|renun[tț]|greu|dificil|ajut[aă]|curaj|tare|mândru/))return pick(AI_RESPONSES.motivatie);
+  // Recadere
+  if(m.match(/rec[aă]dere|am fumat|am gre[sș]it|e[sș]ec|din nou|reînceput|pierdut/))return pick(AI_RESPONSES.recadere);
+  // Somn
+  if(m.match(/somn|adorm|oboseal[aă]|obosit|noaptea|insomnii|trezesc/))return pick(AI_RESPONSES.somn);
+  // Stres
+  if(m.match(/stres|stresat|tensiune|presiune|enervat|sup[aă]rat|deprimat|trist/))return pick(AI_RESPONSES.stres);
+  // Greutate
+  if(m.match(/kilogram|greutate|sl[aă]b|gras|m[aă]n[aâ]nc|m[aă]ncat|poftă de mâncare/))return pick(AI_RESPONSES.greutate);
+  // Copii / familie
+  if(m.match(/copil|copii|familie|so[tț]ie|so[tț]|p[aă]rinte|fat[aă]|b[aă]iat/))return pick(AI_RESPONSES.copii);
+  // Bani
+  if(m.match(/bani|cost|economii|cheltuieli|pre[tț]|ron|lei|economis/))return pick(AI_RESPONSES.bani);
+  // Sport / miscare
+  if(m.match(/sport|alerg|gym|sal[aă]|fitness|mi[sș]care|exerci[tț]iu|antrenament/))return pick(AI_RESPONSES.sport);
+  // Contextual — folosim datele utilizatorului
+  const days=data.startDate?Math.floor((Date.now()-new Date(data.startDate).getTime())/(1000*60*60*24)):0;
+  if(days>0&&m.match(/cum|ce|care|unde|când|de ce/)){
+    return `Ești ${days} ${days===1?'zi':'zile'} fără fum — e o realizare reală! 💚\n\nPoate te întrebi ce se întâmplă acum în corpul tău? Sau cum să faci față mai ușor? Spune-mi mai exact ce te preocupă și îți răspund cu detalii! 🌿`;
+  }
   return pick(AI_RESPONSES.default);
 }
 
