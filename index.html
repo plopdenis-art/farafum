@@ -97,10 +97,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .lungs-wrap{display:flex;justify-content:center;margin:.4rem 0}
 
 /* PLANET GAME */
-.planet-wrap{position:relative;width:200px;height:200px;margin:0 auto;cursor:pointer;user-select:none}
+.planet-wrap{position:relative;width:200px;height:200px;margin:0 auto;cursor:pointer;user-select:none;overflow:visible}
 .planet-svg{width:200px;height:200px;filter:drop-shadow(0 8px 24px rgba(0,0,0,.18));transition:transform .15s ease}
 .planet-wrap:active .planet-svg{transform:scale(.96)}
-.crystal-badge{position:absolute;top:-8px;right:-8px;background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff;border-radius:20px;padding:.22rem .6rem;font-size:.72rem;font-weight:700;box-shadow:0 2px 8px rgba(99,102,241,.4);display:flex;align-items:center;gap:.25rem}
+.crystal-badge{background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff;border-radius:20px;padding:.28rem .75rem;font-size:.76rem;font-weight:700;box-shadow:0 2px 8px rgba(99,102,241,.4);display:flex;align-items:center;gap:.25rem;align-self:center}
 .collect-anim{position:absolute;pointer-events:none;font-size:1.1rem;font-weight:700;color:#6366f1;animation:floatUp .9s ease forwards}
 @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.3)}}
 .planet-stage-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin:.6rem 0 .3rem}
@@ -198,8 +198,8 @@ textarea:focus{border-color:var(--green)}
 .intro-scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem;opacity:0;transition:opacity 1.1s ease;text-align:center}
 .intro-scene.visible{opacity:1}
 .intro-emoji{font-size:4.5rem;margin-bottom:1.2rem}
-.intro-line1{font-size:1.5rem;font-weight:700;color:var(--text);letter-spacing:-.5px;margin-bottom:.55rem;line-height:1.2}
-.intro-line2{font-size:.92rem;color:var(--text3);line-height:1.7;max-width:300px}
+.intro-line1{font-size:1.5rem;font-weight:700;color:#000;letter-spacing:-.5px;margin-bottom:.55rem;line-height:1.2}
+.intro-line2{font-size:.92rem;color:#1c1c1e;line-height:1.7;max-width:300px}
 .intro-skip{position:absolute;bottom:2.5rem;right:1.5rem;background:none;border:1px solid var(--border);color:var(--text3);border-radius:20px;padding:.32rem .85rem;font-size:.76rem;cursor:pointer;font-family:inherit;z-index:10}
 .intro-dots{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10}
 .intro-dot{width:6px;height:6px;border-radius:3px;background:var(--border);transition:all .35s ease}
